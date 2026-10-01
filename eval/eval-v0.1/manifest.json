@@ -1,0 +1,157 @@
+{
+  "name": "eval-v0.1",
+  "version": "0.1",
+  "status": "draft",
+  "frozen_at": null,
+  "language": "bg",
+  "description": "Draft Bulgarian evaluation package for summarize and claim verification (S1 to S5). Passages P1, P2 and P4 are synthetic demo texts; slot P3 is reserved for an EUR-Lex-Sum Bulgarian reference text that is not sourced yet.",
+  "hash_algorithm": "sha256 over the raw UTF-8 bytes of the passage file",
+  "token_count_method": "ceil(characters / 3), a rough estimate for Cyrillic text",
+  "claims_file": "claims/claims.jsonl",
+  "gold_summaries_dir": "gold/summaries/",
+  "label_mapping": {
+    "supported": "SUPPORTED",
+    "denied": "REFUTED",
+    "inconclusive": "NEI"
+  },
+  "passages": [
+    {
+      "id": "P1",
+      "status": "draft",
+      "path": "passages/P1.txt",
+      "language": "bg",
+      "genre": "normative",
+      "source": "synthetic: original text written for eval-v0.1",
+      "celex_id": null,
+      "license": "project-original synthetic text (see LICENSE-NOTES.md)",
+      "split": "n/a (synthetic, evaluation only)",
+      "retrieved_at": "2026-10-01",
+      "file_hash": "sha256:c8c2e5882d3c2ef94ad8999e7f2bac8849b0cb8d7d42a2464230acd3b60fa69a",
+      "token_count_approx": 372,
+      "tasks": [
+        "summarize",
+        "verify"
+      ],
+      "scenarios": [
+        "S1",
+        "S5"
+      ],
+      "companion_passages": [],
+      "notes": "Invented normative-style rules with definitions, numeric thresholds and fees."
+    },
+    {
+      "id": "P2",
+      "status": "draft",
+      "path": "passages/P2.txt",
+      "language": "bg",
+      "genre": "narrative",
+      "source": "synthetic: original text written for eval-v0.1",
+      "celex_id": null,
+      "license": "project-original synthetic text (see LICENSE-NOTES.md)",
+      "split": "n/a (synthetic, evaluation only)",
+      "retrieved_at": "2026-10-01",
+      "file_hash": "sha256:1e6d4fcca40ceee6e9243edf7d5f9336b0e1ac795a7a726c3421e62ef91d9c18",
+      "token_count_approx": 383,
+      "tasks": [
+        "summarize",
+        "verify"
+      ],
+      "scenarios": [
+        "S2",
+        "S5"
+      ],
+      "companion_passages": [],
+      "notes": "Invented narrative of facts in a fictional roof repair dispute."
+    },
+    {
+      "id": "P3",
+      "status": "pending",
+      "path": null,
+      "language": "bg",
+      "genre": "long_eu_legal",
+      "source": "EUR-Lex-Sum (Bulgarian portion), to be sourced",
+      "celex_id": null,
+      "license": null,
+      "split": null,
+      "retrieved_at": null,
+      "file_hash": null,
+      "token_count_approx": null,
+      "tasks": [
+        "summarize",
+        "verify"
+      ],
+      "scenarios": [
+        "S3",
+        "S5"
+      ],
+      "companion_passages": [],
+      "notes": "Reserved slot. Record celex_id, split, reuse terms from the dataset card, retrieved_at and file_hash when the text is added; add a reference summary pointer under gold/summaries/."
+    },
+    {
+      "id": "P4",
+      "status": "draft",
+      "path": "passages/P4.txt",
+      "language": "bg",
+      "genre": "narrative_second_document",
+      "source": "synthetic: original text written for eval-v0.1",
+      "celex_id": null,
+      "license": "project-original synthetic text (see LICENSE-NOTES.md)",
+      "split": "n/a (synthetic, evaluation only)",
+      "retrieved_at": "2026-10-01",
+      "file_hash": "sha256:42cc3f842ce8ba2c07954c0c39de720f774764c4fc6c773ca2399816b0c881c4",
+      "token_count_approx": 343,
+      "tasks": [
+        "summarize",
+        "verify"
+      ],
+      "scenarios": [
+        "S4",
+        "S5"
+      ],
+      "companion_passages": [
+        "P2"
+      ],
+      "notes": "Invented inspection record on the same fictional case as P2; ingested together with P2 for multi-document claims."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "S1",
+      "passages": [
+        "P1"
+      ],
+      "focus": "short normative text: supported claims, basic summary"
+    },
+    {
+      "id": "S2",
+      "passages": [
+        "P2"
+      ],
+      "focus": "short narrative text: supported and refuted claims"
+    },
+    {
+      "id": "S3",
+      "passages": [
+        "P3"
+      ],
+      "focus": "long EU legal text split into chunks: NEI (pending P3)"
+    },
+    {
+      "id": "S4",
+      "passages": [
+        "P4",
+        "P2"
+      ],
+      "focus": "second document on the same case: multi-document consistency"
+    },
+    {
+      "id": "S5",
+      "passages": [
+        "P1",
+        "P2",
+        "P4"
+      ],
+      "focus": "NEI and invented-date traps (long-context variant pending P3)"
+    }
+  ]
+}

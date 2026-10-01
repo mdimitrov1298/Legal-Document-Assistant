@@ -1,0 +1,23 @@
+# Build context is the repository root (see backend/Dockerfile)
+.git
+.github
+.env
+**/.env
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/.venv
+**/venv
+**/node_modules
+**/dist
+data
+backend/data
+backend/tests
+eval/runs
+frontend
+docs
+samples
+*.log
+.DS_Store

@@ -1,0 +1,45 @@
+# Local stack: Ollama + API + web UI.
+#   docker compose up --build
+#   docker compose exec ollama ollama pull qwen2.5:7b
+# UI: http://localhost:8080  API: http://localhost:8000/docs
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - '11434:11434'
+    volumes:
+      - 'ollama:/root/.ollama'
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      OLLAMA_BASE_URL: 'http://ollama:11434'
+      OLLAMA_MODEL: '${OLLAMA_MODEL:-qwen2.5:7b}'
+      OLLAMA_NUM_CTX: '${OLLAMA_NUM_CTX:-4096}'
+      OLLAMA_GENERATE_TIMEOUT: '${OLLAMA_GENERATE_TIMEOUT:-300}'
+      EMBEDDING_BACKEND: '${EMBEDDING_BACKEND:-sentence-transformers}'
+      MAX_UPLOAD_MB: '${MAX_UPLOAD_MB:-20}'
+      LOG_FORMAT: 'json'
+      CORS_ORIGINS: 'http://localhost:8080,http://localhost:5173,http://127.0.0.1:5173'
+    ports:
+      - '8000:8000'
+    volumes:
+      - 'backend-data:/data'
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '8080:80'
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  backend-data:

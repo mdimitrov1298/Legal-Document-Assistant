@@ -1,0 +1,14 @@
+# Runtime dependencies (Python 3.12 to 3.13)
+# chromadb>=1.0 avoids chroma-hnswlib source builds (needs g++)
+# Dev tools (ruff, pytest, pre-commit) live in requirements-dev.txt
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.5
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+pypdf==5.1.0
+httpx==0.28.1
+chromadb==1.0.20
+# Embeddings: optional heavy dep, install for real MiniLM; hash stub works without it
+sentence-transformers==3.3.1
+python-dotenv==1.0.1

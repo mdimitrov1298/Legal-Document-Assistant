@@ -1,0 +1,165 @@
+import { useCallback, useEffect, useState } from 'react'
+import { getCase } from '@/api/cases'
+import { isAbortError, toApiError, type ApiError } from '@/api/client'
+import { deleteDocument, listDocuments, uploadDocument } from '@/api/documents'
+import { getIndexStats, ingestCase, summarizeCase, verifyClaim } from '@/api/rag'
+import type {
+  CaseResponse,
+  DocumentResponse,
+  IndexStatsResponse,
+  IngestResponse,
+  SummarizeResponse,
+  VerifyResponse,
+} from '@/api/types'
+
+export type CaseAction = 'load' | 'upload' | 'deleteDocument' | 'ingest' | 'summarize' | 'verify'
+
+interface Snapshot {
+  caseData: CaseResponse
+  documents: DocumentResponse[]
+  indexStats: IndexStatsResponse | null
+}
+
+export function canQuery(caseData: CaseResponse | null): boolean {
+  return caseData?.status === 'ingested' || caseData?.status === 'stale'
+}
+
+async function fetchSnapshot(caseId: string, signal?: AbortSignal): Promise<Snapshot> {
+  const [caseData, documents] = await Promise.all([
+    getCase(caseId, signal),
+    listDocuments(caseId, signal),
+  ])
+  let indexStats: IndexStatsResponse | null = null
+  if (canQuery(caseData)) {
+    try {
+      indexStats = await getIndexStats(caseId, signal)
+    } catch (err) {
+      // Index stats are informational; a missing index must not block the view.
+      if (isAbortError(err)) throw err
+    }
+  }
+  return { caseData, documents, indexStats }
+}
+
+/**
+ * State and actions for a single case. Mount with `key={caseId}` so that
+ * switching cases starts from a clean state.
+ */
+export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResponse) => void) {
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
+  const [ingestResult, setIngestResult] = useState<IngestResponse | null>(null)
+  const [summary, setSummary] = useState<SummarizeResponse | null>(null)
+  const [verification, setVerification] = useState<VerifyResponse | null>(null)
+  const [busy, setBusy] = useState<CaseAction | null>('load')
+  const [error, setError] = useState<ApiError | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchSnapshot(caseId, controller.signal).then(
+      (next) => {
+        setSnapshot(next)
+        setBusy(null)
+        onCaseChange?.(next.caseData)
+      },
+      (err: unknown) => {
+        if (isAbortError(err)) return
+        setError(toApiError(err))
+        setBusy(null)
+      },
+    )
+    return () => controller.abort()
+  }, [caseId, onCaseChange])
+
+  const run = useCallback(async (action: CaseAction, fn: () => Promise<void>) => {
+    setBusy(action)
+    setError(null)
+    try {
+      await fn()
+    } catch (err) {
+      setError(toApiError(err))
+    } finally {
+      setBusy(null)
+    }
+  }, [])
+
+  const refresh = useCallback(async () => {
+    const next = await fetchSnapshot(caseId)
+    setSnapshot(next)
+    onCaseChange?.(next.caseData)
+  }, [caseId, onCaseChange])
+
+  const resetResults = useCallback(() => {
+    setIngestResult(null)
+    setSummary(null)
+    setVerification(null)
+  }, [])
+
+  const upload = useCallback(
+    (files: File[]) =>
+      run('upload', async () => {
+        try {
+          for (const file of files) await uploadDocument(caseId, file)
+        } finally {
+          resetResults()
+          await refresh()
+        }
+      }),
+    [caseId, run, refresh, resetResults],
+  )
+
+  const removeDocument = useCallback(
+    (documentId: string) =>
+      run('deleteDocument', async () => {
+        await deleteDocument(caseId, documentId)
+        resetResults()
+        await refresh()
+      }),
+    [caseId, run, refresh, resetResults],
+  )
+
+  const ingest = useCallback(
+    () =>
+      run('ingest', async () => {
+        const result = await ingestCase(caseId)
+        resetResults()
+        setIngestResult(result)
+        await refresh()
+      }),
+    [caseId, run, refresh, resetResults],
+  )
+
+  const summarize = useCallback(
+    () =>
+      run('summarize', async () => {
+        setSummary(await summarizeCase(caseId))
+      }),
+    [caseId, run],
+  )
+
+  const verify = useCallback(
+    (claim: string) =>
+      run('verify', async () => {
+        setVerification(await verifyClaim(caseId, { claim }))
+      }),
+    [caseId, run],
+  )
+
+  const clearError = useCallback(() => setError(null), [])
+
+  return {
+    caseData: snapshot?.caseData ?? null,
+    documents: snapshot?.documents ?? [],
+    indexStats: snapshot?.indexStats ?? null,
+    ingestResult,
+    summary,
+    verification,
+    busy,
+    error,
+    clearError,
+    upload,
+    removeDocument,
+    ingest,
+    summarize,
+    verify,
+  }
+}

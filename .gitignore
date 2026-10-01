@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+dist/
+*.local
+.vite/
+
+# Data & vector store (local only), keep folder placeholders
+data/*
+!data/.gitkeep
+chroma/
+*.chroma/
+backend/data/
+frontend/dist/
+
+# Evaluation run outputs (local only)
+eval/runs/*
+!eval/runs/.gitkeep
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+
+# Logs
+*.log
