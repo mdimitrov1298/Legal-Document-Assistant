@@ -1,8 +1,10 @@
 # Legal Document Assistant (Diploma Prototype)
 
-Local retrieval-augmented assistant for **Bulgarian case documents**. A user
-creates a case, uploads PDF or TXT files, ingests them into a local vector
-store, gets a summary with citations and checks a claim against the documents.
+Local retrieval-augmented assistant for **Bulgarian and English case documents**.
+A user creates a case, uploads PDF or TXT files, ingests them into a local
+vector store, gets a summary with citations and checks a claim against the
+documents. The document language is detected automatically and the answer
+language follows the evidence (or can be overridden per request).
 The verdict is `supported`, `denied` or `inconclusive`, always backed by quotes
 that are flagged as verbatim or not.
 
@@ -21,7 +23,7 @@ case content. The target machine has about 16 GB of RAM.
 | LLM runtime | Ollama only: default `s_emanuilov/BgGPT-v1.0:9b` (BgGPT v1.0 9B, about 7.7 GB); fallback `qwen2.5:7b` for low-memory machines (about 4.9 GB); evaluation control `llama3.1:8b` |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` on CPU (default); optional Ollama `nomic-embed-text`; `hash_stub` for CI/offline |
 | Vector store | Chroma `PersistentClient`, one collection per case |
-| Formats | PDF and TXT, Bulgarian only |
+| Formats | PDF and TXT, Bulgarian and English (language auto-detected) |
 | Tooling | ruff, pytest, pre-commit, ESLint, Prettier, Docker Compose, GitHub Actions |
 
 ## Scope and non-goals
@@ -34,7 +36,7 @@ Out of scope, by design:
 - legal advice, interpretation or conclusions;
 - legal classification of cases;
 - building timelines or chronologies as analysis;
-- English or other non-Bulgarian case material;
+- languages other than Bulgarian and English;
 - cloud LLM APIs for case content, authentication or multi-user deployment.
 
 ## Quick start (local)
@@ -202,14 +204,21 @@ Codes: `validation_error` 422, `case_not_found` 404, `document_not_found` 404,
 | [docs/api-endpoints.md](./docs/api-endpoints.md) | Complete endpoint reference |
 | [docs/architecture.md](./docs/architecture.md) | Architecture chapter of the thesis (Bulgarian) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Short engineering overview and code layout |
-| [eval/eval-v0.1/README.md](./eval/eval-v0.1/README.md) | Evaluation package (draft) |
+| [eval/eval-v0.1/README.md](./eval/eval-v0.1/README.md) | Bulgarian evaluation package (draft) |
+| [eval/eval-en-v0.1/README.md](./eval/eval-en-v0.1/README.md) | English evaluation package (draft) |
 
 ## Evaluation harness
 
-[`eval/eval-v0.1/`](./eval/eval-v0.1/) is a **draft** Bulgarian evaluation
-package: synthetic passages P1, P2 and P4, a pending slot P3 for an
-EUR-Lex-Sum Bulgarian text, and 18 seed claims with gold labels and evidence
-spans. It is not frozen yet, and no results are published in this repository.
+Two draft evaluation packages are provided:
+
+- [`eval/eval-v0.1/`](./eval/eval-v0.1/) (Bulgarian): 4 passages (P1, P2, P4
+  synthetic; P3 EUR-Lex-Sum BG, CELEX 31998R2866, CC-BY-SA 4.0), 25 claims
+  with gold labels and evidence spans, gold summaries.
+- [`eval/eval-en-v0.1/`](./eval/eval-en-v0.1/) (English): mirrors the BG
+  package with English translations of P1, P2, P4 and the English EUR-Lex-Sum
+  version of P3; 25 claims, same label distribution and trap types.
+
+Neither package is frozen yet; no results are committed.
 
 ```bash
 cd backend
@@ -254,6 +263,6 @@ typecheck and build for the frontend.
 ## Academic use
 
 This is a diploma research prototype, not a legal advice product. Outputs
-must be checked by a person against the cited quotes. Sample files in
-`samples/` and passages in `eval/` are original synthetic Bulgarian texts;
-they describe fictional people and companies.
+must be checked by a person against the cited quotes. Sample files in `samples/` are original synthetic Bulgarian texts; passages in
+`eval/` are synthetic Bulgarian texts and their English translations, plus
+EUR-Lex-Sum excerpts. They describe fictional people and companies.

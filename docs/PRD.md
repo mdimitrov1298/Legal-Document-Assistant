@@ -19,7 +19,7 @@
 
 ## 1. Executive Summary
 
-The Legal Document Assistant is a local research prototype that helps a legal professional or law student work through the documents of a single case. The user creates a case, uploads Bulgarian PDF or TXT files, and the system indexes them locally. On top of that index the system offers two functions:
+The Legal Document Assistant is a local research prototype that helps a legal professional or law student work through the documents of a single case. The user creates a case, uploads Bulgarian or English PDF or TXT files, and the system indexes them locally. The document language is detected automatically and prompts are selected accordingly. On top of that index the system offers two functions:
 
 1. **Summarize:** a short factual summary of the case documents in Bulgarian, where every statement is traceable to retrieved excerpts (citations).
 2. **Verify:** a check of a user-supplied factual claim against the case documents, returning `supported`, `denied` or `inconclusive` together with direct quotes.
@@ -70,7 +70,7 @@ The product consists of two parts that share one retrieval pipeline:
     - JSON case index on disk with case metadata and document records (atomic writes under a lock).
     - Cases can be created, listed, renamed and deleted; deleting a case removes its uploads and its Chroma collection.
     - Uploaded files stored under a per-case directory with `sha256` and size; documents can be deleted individually, which also removes their chunks from Chroma.
-    - Accepted formats: `.pdf` and `.txt` only, at most `MAX_UPLOAD_MB` (default 20); a `.pdf` must start with `%PDF`; empty files are rejected. Case documents are Bulgarian only.
+    - Accepted formats: `.pdf` and `.txt` only, at most `MAX_UPLOAD_MB` (default 20); a `.pdf` must start with `%PDF`; empty files are rejected. Case documents may be Bulgarian or English; language is detected at ingest.
     - Case lifecycle: `empty`, `uploaded`, `ingested`, `stale` (documents changed after ingest).
 - **Ingest Pipeline**
     - Text extraction (pypdf for PDF, direct read for TXT).
@@ -100,7 +100,7 @@ The product consists of two parts that share one retrieval pipeline:
 ### 3.2 Non-Functional Requirements
 
 - **Privacy:** Case content, embeddings and the vector index never leave the machine. External network access is limited to downloading public model weights and public source texts before use.
-- **Language scope:** Case documents are Bulgarian only. No English case documents or samples are part of the product.
+- **Language scope:** Case documents may be Bulgarian or English. Language is detected automatically at ingest; answer language follows the evidence or can be overridden per request.
 - **Traceability:** Every citation identifies the document, the chunk and the quoted text, and states whether the quote is verbatim.
 - **Observability:** Every response carries a request id that also appears in the logs and in error bodies.
 - **API stability:** Endpoints are versioned under `/api/v1`; error codes are part of the contract.
@@ -251,7 +251,7 @@ Related documents: [architecture-diagrams.md](./architecture-diagrams.md) (Merma
 - Legal advice, legal interpretation, legal classification of cases, legal conclusions.
 - Building legal timelines or chronologies as an analytical product.
 - Cloud LLM APIs for case content, including masked or anonymised case content.
-- Non-Bulgarian case documents and English evaluation passages.
+- Languages other than Bulgarian and English.
 - Real office case files with personal data in the public evaluation.
 - Multi-user accounts, authentication, remote hosting.
 - OCR for scanned PDFs and complex layouts.

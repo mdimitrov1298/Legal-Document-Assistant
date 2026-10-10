@@ -1,0 +1,156 @@
+{
+    "name": "eval-en-v0.1",
+    "version": "0.1",
+    "status": "draft",
+    "frozen_at": null,
+    "language": "en",
+    "description": "Draft English evaluation package for summarize and claim verification (S1 to S5). Passages P1, P2 and P4 are English translations of the synthetic Bulgarian demo texts; P3 is a real EUR-Lex-Sum English document (CELEX 31998R2866, Council Regulation (EC) No 2866/98, CC-BY-SA 4.0).",
+    "hash_algorithm": "sha256 over the raw UTF-8 bytes of the passage file",
+    "token_count_method": "ceil(words * 1.3), a rough estimate for English text",
+    "claims_file": "claims/claims.jsonl",
+    "gold_summaries_dir": "gold/summaries/",
+    "label_mapping": {
+        "supported": "SUPPORTED",
+        "denied": "REFUTED",
+        "inconclusive": "NEI"
+    },
+    "passages": [
+        {
+            "id": "P1",
+            "status": "draft",
+            "path": "passages/P1.txt",
+            "language": "en",
+            "genre": "normative",
+            "source": "project-original English translation of eval-v0.1 P1 (synthetic Bulgarian text)",
+            "celex_id": null,
+            "license": "project-original translated text (see LICENSE-NOTES.md)",
+            "split": "n/a (synthetic, evaluation only)",
+            "retrieved_at": "2026-10-10",
+            "file_hash": "sha256:2ac21e234999c9a05c3b6662dc219549e3cb6c1b2e06af1692f93d02d083dd06",
+            "token_count_approx": 275,
+            "tasks": [
+                "summarize",
+                "verify"
+            ],
+            "scenarios": [
+                "S1",
+                "S5"
+            ],
+            "companion_passages": [],
+            "notes": "English translation of P1 (invented normative-style rules), same facts and structure as the Bulgarian original."
+        },
+        {
+            "id": "P2",
+            "status": "draft",
+            "path": "passages/P2.txt",
+            "language": "en",
+            "genre": "narrative",
+            "source": "project-original English translation of eval-v0.1 P2 (synthetic Bulgarian text)",
+            "celex_id": null,
+            "license": "project-original translated text (see LICENSE-NOTES.md)",
+            "split": "n/a (synthetic, evaluation only)",
+            "retrieved_at": "2026-10-10",
+            "file_hash": "sha256:a6ec51dcda5f2facba8f169182af922e51277aafb1b2815c2f474c81f667ae52",
+            "token_count_approx": 270,
+            "tasks": [
+                "summarize",
+                "verify"
+            ],
+            "scenarios": [
+                "S2",
+                "S5"
+            ],
+            "companion_passages": [],
+            "notes": "English translation of P2 (invented narrative of a roof repair dispute), same facts and structure."
+        },
+        {
+            "id": "P3",
+            "status": "draft",
+            "path": "passages/P3.txt",
+            "language": "en",
+            "genre": "EU regulatory",
+            "source": "EUR-Lex-Sum English split, train set",
+            "celex_id": "31998R2866",
+            "license": "CC-BY-SA 4.0 (EUR-Lex-Sum dataset)",
+            "split": "train",
+            "retrieved_at": "2026-10-10",
+            "file_hash": "sha256:255b3b3bff77e5b81128a636a070287a4ad08c3682622d2dce2a20ccbfaa0db0",
+            "token_count_approx": 922,
+            "tasks": [
+                "summarize",
+                "verify"
+            ],
+            "scenarios": [
+                "S3"
+            ],
+            "companion_passages": [],
+            "notes": "English version of EU Council Regulation 2866/98 on euro conversion rates. Same CELEX 31998R2866 as eval-v0.1 P3 (Bulgarian). Real EUR-Lex-Sum document, CC-BY-SA 4.0."
+        },
+        {
+            "id": "P4",
+            "status": "draft",
+            "path": "passages/P4.txt",
+            "language": "en",
+            "genre": "narrative_second_document",
+            "source": "project-original English translation of eval-v0.1 P4 (synthetic Bulgarian text)",
+            "celex_id": null,
+            "license": "project-original translated text (see LICENSE-NOTES.md)",
+            "split": "n/a (synthetic, evaluation only)",
+            "retrieved_at": "2026-10-10",
+            "file_hash": "sha256:64b1d0babc74f9bb07502c543221e0648e1504933ba0284156f9d0e99709a070",
+            "token_count_approx": 223,
+            "tasks": [
+                "summarize",
+                "verify"
+            ],
+            "scenarios": [
+                "S4",
+                "S5"
+            ],
+            "companion_passages": [
+                "P2"
+            ],
+            "notes": "English translation of P4 (invented inspection record on the same case as P2); ingested together with P2 for multi-document claims."
+        }
+    ],
+    "scenarios": [
+        {
+            "id": "S1",
+            "passages": [
+                "P1"
+            ],
+            "focus": "short normative text: supported claims, basic summary"
+        },
+        {
+            "id": "S2",
+            "passages": [
+                "P2"
+            ],
+            "focus": "short narrative text: supported and refuted claims"
+        },
+        {
+            "id": "S3",
+            "passages": [
+                "P3"
+            ],
+            "focus": "long EU legal text (P3, CELEX 31998R2866) split into chunks: SUPPORTED, REFUTED and NEI claims"
+        },
+        {
+            "id": "S4",
+            "passages": [
+                "P4",
+                "P2"
+            ],
+            "focus": "second document on the same case: multi-document consistency"
+        },
+        {
+            "id": "S5",
+            "passages": [
+                "P1",
+                "P2",
+                "P4"
+            ],
+            "focus": "NEI and invented-date traps on the synthetic passages"
+        }
+    ]
+}
