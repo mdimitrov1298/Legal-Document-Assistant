@@ -52,7 +52,7 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant User as Legal Professional
+    participant User
     participant UI as Web UI
     participant API as FastAPI
     participant Store as Storage service
@@ -103,7 +103,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant User as Legal Professional
+    participant User
     participant UI as Web UI
     participant API as FastAPI
     participant Pipe as Pipeline
@@ -141,7 +141,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant User as Legal Professional
+    participant User
     participant UI as Web UI
     participant API as FastAPI
     participant Pipe as Pipeline
@@ -607,7 +607,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([Operator selects generator]) --> Which{Generator role}
+    Start([Select generator]) --> Which{Generator role}
     Which -->|Baseline| Qwen[ollama pull qwen2.5:7b]
     Which -->|Control| Llama[ollama pull llama3.1:8b]
     Which -->|A/B| GGUF[Download BgGPT-7B-Instruct-v0.2<br/>Q4_K_M GGUF]

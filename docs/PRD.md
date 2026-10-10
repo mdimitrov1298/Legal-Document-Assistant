@@ -2,19 +2,18 @@
 
 **Project Name:** Legal Document Assistant
 
-**Version:** 1.2
+**Version:** 1.1
 
-**Date:** 2026-10-01
+**Date:** 2026-08-18
 
 ---
 
 ## Revision History
 
-| Version | Date | Summary |
-| --- | --- | --- |
-| 1.0 | 2026-10-01 | Initial requirements for the local case assistant (ingest, summarize, verify with citations). |
-| 1.1 | 2026-10-01 | Evaluation harness split out as Part II (eval-v0.1, A/B/control protocol); Bulgarian-only scope locked for case documents and evaluation passages. |
-| 1.2 | 2026-10-01 | Conformance with API v1 (`/api/v1`, error envelope, request id); case lifecycle (empty, uploaded, ingested, stale); citation `verbatim` flag and `{index, quote}` evidence format; stricter upload validation (PDF/TXT only, `%PDF` check); document delete removes its chunks; API 0.2.0 and docker compose setup; updated milestones and tech stack. |
+| Version | Date       | Summary |
+|---------|------------| --- |
+| 1.0     | 2026-07-24 | Initial requirements for the local case assistant (ingest, summarize, verify with citations). |
+| 1.1     | 2026-09-18 | Conformance with API v1 (`/api/v1`, error envelope, request id); case lifecycle (empty, uploaded, ingested, stale); citation `verbatim` flag and `{index, quote}` evidence format; stricter upload validation (PDF/TXT only, `%PDF` check); document delete removes its chunks; API 0.2.0 and docker compose setup; updated milestones and tech stack. |
 
 ---
 
@@ -186,27 +185,7 @@ The product consists of two parts that share one retrieval pipeline:
 
 ---
 
-## 4. User Roles
-
-### Part I: Case Assistant
-
-| Role | Capabilities |
-| --- | --- |
-| Legal Professional | Create cases, upload Bulgarian documents, run ingest, read summaries and verdicts, inspect and reject citations |
-| Law Student | Same as Legal Professional, for study cases and demo documents |
-| Operator / Developer | Install models, configure `.env`, monitor health and logs, run tests |
-
-### Part II: Evaluation Harness
-
-| Role | Capabilities |
-| --- | --- |
-| Evaluator / Annotator | Prepare seed claims and gold evidence, annotate blinded outputs for faithfulness and citation support |
-| Operator / Developer | Freeze the package, pull or import models, run the runner and scorer, archive run logs |
-| Thesis Reviewer | Read the published package, parameters and result tables (read-only) |
-
----
-
-## 5. Data Flow Overview
+## 4. Data Flow Overview
 
 ### Part I Flow:
 
@@ -221,17 +200,17 @@ The product consists of two parts that share one retrieval pipeline:
 
 ### Part II Flow:
 
-1. Evaluator completes the passages, seed claims and gold evidence of eval-v0.1 and records hashes in the manifest.
-2. Operator freezes the package (status frozen) before the first comparative run.
-3. Operator fixes the retrieval parameters and `num_ctx`, and pulls or imports the three generators.
+1. Complete the passages, seed claims and gold evidence of eval-v0.1 and record hashes in the manifest.
+2. Freeze the package (status frozen) before the first comparative run.
+3. Fix the retrieval parameters and `num_ctx`, and pull or import the three generators.
 4. For each generator, the runner ingests the passages, runs S1 to S5 in the same order and writes a run log.
 5. The scorer computes automatic metrics from the logs and exports blinded annotation sheets.
-6. Evaluator annotates faithfulness and citation support on the blinded outputs.
-7. Results are tabulated per scenario and the A/B interpretation rule is applied.
+6. Annotate faithfulness and citation support on the blinded outputs.
+7. Tabulate results per scenario and apply the A/B interpretation rule.
 
 ---
 
-## 6. Technical Architecture
+## 5. Technical Architecture
 
 ### Tech Stack
 
@@ -251,7 +230,7 @@ Related documents: [architecture-diagrams.md](./architecture-diagrams.md) (Merma
 
 ---
 
-## 7. Milestones
+## 6. Milestones
 
 | Milestone | Target Date | Status |
 | --- | --- | --- |
@@ -267,7 +246,7 @@ Related documents: [architecture-diagrams.md](./architecture-diagrams.md) (Merma
 
 ---
 
-## 8. Out of Scope
+## 7. Out of Scope
 
 - Legal advice, legal interpretation, legal classification of cases, legal conclusions.
 - Building legal timelines or chronologies as an analytical product.
@@ -281,7 +260,7 @@ Related documents: [architecture-diagrams.md](./architecture-diagrams.md) (Merma
 
 ---
 
-## 9. Future Enhancements
+## 8. Future Enhancements
 
 - Hybrid retrieval (BM25 plus dense embeddings).
 - Domain-specific embeddings or a reranker.
@@ -325,7 +304,7 @@ flowchart TB
             RUN["Runner CLI"]
             LOGS[("Run logs")]
             SCORE["Scorer CLI"]
-            ANN["Evaluator / Annotator"]
+            ANN["Human annotation"]
         end
     end
 
