@@ -1,4 +1,4 @@
-"""Document endpoints."""
+"""Document upload, listing and deletion (PDF and TXT, Bulgarian or English)."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ def to_document_response(doc: dict) -> DocumentResponse:
         content_type=doc["content_type"],
         size_bytes=doc["size_bytes"],
         sha256=doc.get("sha256"),
+        language=doc.get("language"),
         uploaded_at=doc["uploaded_at"],
     )
 
@@ -41,7 +42,7 @@ async def list_documents(case_id: str) -> list[DocumentResponse]:
 async def upload_document(
     case_id: str, file: UploadFile = File(...)
 ) -> DocumentResponse:
-    """Upload a Bulgarian PDF or TXT document (max MAX_UPLOAD_MB)."""
+    """Upload a PDF or TXT document (Bulgarian or English, max MAX_UPLOAD_MB)."""
     store = get_store()
     store.require_case(case_id)
     settings = get_settings()

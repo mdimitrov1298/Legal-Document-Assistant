@@ -58,7 +58,10 @@ async def summarize_case(
     case_id: str, body: SummarizeRequest | None = None
 ) -> SummarizeResponse:
     top_k = body.top_k if body else None
-    return await pipeline.summarize_case(case_id, top_k=top_k)
+    answer_language = body.answer_language if body else "auto"
+    return await pipeline.summarize_case(
+        case_id, top_k=top_k, answer_language=answer_language
+    )
 
 
 @router.post(
@@ -67,4 +70,6 @@ async def summarize_case(
     responses=error_responses(404, 409, 422, 503),
 )
 async def verify_claim(case_id: str, body: VerifyRequest) -> VerifyResponse:
-    return await pipeline.verify_claim(case_id, body.claim, top_k=body.top_k)
+    return await pipeline.verify_claim(
+        case_id, body.claim, top_k=body.top_k, answer_language=body.answer_language
+    )

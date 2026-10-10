@@ -14,4 +14,5 @@ class DocumentResponse(BaseModel):
     content_type: str
     size_bytes: int
     sha256: str | None = None
+    language: str | None = None
     uploaded_at: datetime

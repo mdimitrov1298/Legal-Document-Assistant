@@ -7,6 +7,7 @@ import logging
 import re
 import time
 from pathlib import Path
+from typing import Any
 
 from app.core.config import get_settings
 from app.core.errors import CaseNotIngestedError, IngestFailedError, NoDocumentsError
@@ -21,6 +22,7 @@ from app.services.chunking import Chunk, chunk_text
 from app.services.citations import citation_from_hit, citations_from_model
 from app.services.embeddings import get_embedder, get_embedding_backend
 from app.services.extraction import extract_text
+from app.services.language import Language, detect_language, majority_language
 from app.services.llm import get_llm
 from app.services.storage import STATUS_INGESTED, STATUS_STALE, get_store
 from app.services.vector_store import get_vectorstore
@@ -29,6 +31,18 @@ logger = logging.getLogger(__name__)
 
 QUERYABLE_STATUSES = {STATUS_INGESTED, STATUS_STALE}
 SUMMARY_FALLBACK_QUERY = "страни дати суми срокове задължения"
+SUMMARY_FALLBACK_QUERY_EN = "parties dates amounts deadlines obligations"
+
+
+def _resolve_language(
+    hits: list[dict[str, Any]],
+    answer_language: str = "auto",
+) -> Language:
+    """Determine the prompt language from retrieved chunks or an explicit override."""
+    if answer_language in ("bg", "en"):
+        return answer_language  # type: ignore[return-value]
+    langs: list[Language] = [h.get("metadata", {}).get("language", "bg") for h in hits]
+    return majority_language(langs)
 
 
 def _elapsed_ms(started: float) -> float:
@@ -82,7 +96,7 @@ async def ingest_case(case_id: str) -> IngestResponse:
     get_embedder(settings)
     vs = get_vectorstore()
 
-    per_doc: list[tuple[dict, list[Chunk]]] = []
+    per_doc: list[tuple[dict, list[Chunk], Language]] = []
     for doc in case["documents"]:
         path = Path(doc["path"])
         if not path.exists():
@@ -95,6 +109,13 @@ async def ingest_case(case_id: str) -> IngestResponse:
                 f"Could not extract text from {doc['filename']}",
                 details={"document_id": doc["id"], "filename": doc["filename"]},
             ) from exc
+        lang = detect_language(text)
+        if lang == "other":
+            logger.warning(
+                "Document %s detected as '%s'; treating as English for prompts",
+                doc["id"],
+                lang,
+            )
         chunks = chunk_text(
             text,
             doc_id=doc["id"],
@@ -102,9 +123,9 @@ async def ingest_case(case_id: str) -> IngestResponse:
             overlap=settings.chunk_overlap,
         )
         if chunks:
-            per_doc.append((doc, chunks))
+            per_doc.append((doc, chunks, lang))
 
-    total_chunks = sum(len(chunks) for _, chunks in per_doc)
+    total_chunks = sum(len(chunks) for _, chunks, _ in per_doc)
     if total_chunks == 0:
         raise IngestFailedError(
             "No extractable text found in the case documents",
@@ -112,7 +133,7 @@ async def ingest_case(case_id: str) -> IngestResponse:
         )
 
     vs.reset_case(case_id)
-    for doc, chunks in per_doc:
+    for doc, chunks, lang in per_doc:
         vs.upsert_chunks(
             case_id,
             ids=[c.chunk_id for c in chunks],
@@ -122,6 +143,7 @@ async def ingest_case(case_id: str) -> IngestResponse:
                     "document_id": doc["id"],
                     "document_filename": doc["filename"],
                     "chunk_index": c.index,
+                    "language": lang,
                 }
                 for c in chunks
             ],
@@ -149,7 +171,11 @@ async def ingest_case(case_id: str) -> IngestResponse:
     )
 
 
-async def summarize_case(case_id: str, top_k: int | None = None) -> SummarizeResponse:
+async def summarize_case(
+    case_id: str,
+    top_k: int | None = None,
+    answer_language: str = "auto",
+) -> SummarizeResponse:
     started = time.perf_counter()
     top_k = top_k or get_settings().summarize_top_k
     case = _require_queryable_case(case_id)
@@ -162,9 +188,11 @@ async def summarize_case(case_id: str, top_k: int | None = None) -> SummarizeRes
         hits = vs.query(case_id, SUMMARY_FALLBACK_QUERY, top_k=top_k)
     retrieval_ms = _elapsed_ms(retrieval_started)
 
-    prompt = prompts.build_summarize_prompt(case.get("title"), hits)
+    lang = _resolve_language(hits, answer_language)
+    system_prompt = prompts.get_summarize_system(lang)
+    prompt = prompts.build_summarize_prompt(case.get("title"), hits, language=lang)
     generation_started = time.perf_counter()
-    raw, stubbed = await llm.generate(prompt, system=prompts.SUMMARIZE_SYSTEM)
+    raw, stubbed = await llm.generate(prompt, system=system_prompt)
     generation_ms = _elapsed_ms(generation_started)
     parsed = _parse_json_object(raw)
 
@@ -198,11 +226,15 @@ async def summarize_case(case_id: str, top_k: int | None = None) -> SummarizeRes
         duration_ms=_elapsed_ms(started),
         retrieval_ms=retrieval_ms,
         generation_ms=generation_ms,
+        answer_language=lang,
     )
 
 
 async def verify_claim(
-    case_id: str, claim: str, top_k: int | None = None
+    case_id: str,
+    claim: str,
+    top_k: int | None = None,
+    answer_language: str = "auto",
 ) -> VerifyResponse:
     started = time.perf_counter()
     top_k = top_k or get_settings().verify_top_k
@@ -215,9 +247,11 @@ async def verify_claim(
     retrieved = [citation_from_hit(h) for h in hits]
     retrieval_ms = _elapsed_ms(retrieval_started)
 
-    prompt = prompts.build_verify_prompt(claim, hits)
+    lang = _resolve_language(hits, answer_language)
+    system_prompt = prompts.get_verify_system(lang)
+    prompt = prompts.build_verify_prompt(claim, hits, language=lang)
     generation_started = time.perf_counter()
-    raw, stubbed = await llm.generate(prompt, system=prompts.VERIFY_SYSTEM)
+    raw, stubbed = await llm.generate(prompt, system=system_prompt)
     generation_ms = _elapsed_ms(generation_started)
     parsed = _parse_json_object(raw)
 
@@ -269,4 +303,5 @@ async def verify_claim(
         duration_ms=_elapsed_ms(started),
         retrieval_ms=retrieval_ms,
         generation_ms=generation_ms,
+        answer_language=lang,
     )

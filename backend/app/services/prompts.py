@@ -1,4 +1,4 @@
-"""Bulgarian prompts for summarize and verify, plus chat template handling.
+"""Bulgarian and English prompts for summarize and verify, plus chat template handling.
 
 The system prompts are identical for every model so A/B runs stay comparable.
 The only model-specific difference is the legacy BgGPT instruction template:
@@ -14,7 +14,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-PROMPT_VERSION = "bg-v1"
+PROMPT_VERSION_BG = "bg-v1"
+PROMPT_VERSION_EN = "en-v1"
+# Legacy alias kept for the eval runner header (always reports bg-v1 when BG).
+PROMPT_VERSION = PROMPT_VERSION_BG
+
+# ---------------------------------------------------------------------------
+# Bulgarian system prompts (unchanged)
+# ---------------------------------------------------------------------------
 
 SUMMARIZE_SYSTEM = (
     "Ти обобщаваш документи по дело за изследователски прототип. "
@@ -40,10 +47,60 @@ VERIFY_SYSTEM = (
 
 NO_EXCERPTS = "(Няма индексирани откъси.)"
 
+# ---------------------------------------------------------------------------
+# English system prompts (same JSON contract and labels)
+# ---------------------------------------------------------------------------
 
-def format_excerpts(hits: list[dict[str, Any]]) -> str:
+SUMMARIZE_SYSTEM_EN = (
+    "You are summarising case documents for a research prototype. "
+    "Use ONLY the numbered excerpts. Do not add facts, names, dates or amounts "
+    "that are not present in the excerpts. Do not give legal advice, conclusions, "
+    "qualifications or interpretations. Write in English, in 5 to 8 sentences. "
+    'Reply with JSON only: {"summary": "...", "citation_indices": [int, ...]}, '
+    "where citation_indices are the numbers of the excerpts you used."
+)
+
+VERIFY_SYSTEM_EN = (
+    "You are checking whether a CLAIM is supported or denied by the given "
+    "CITATIONS from case documents. Use only these citations as evidence; do "
+    "not use external knowledge and do not invent text. If the citations do not "
+    "contain enough information, return inconclusive. Do not give legal conclusions. "
+    "Write the rationale in English. "
+    'Reply with JSON only: {"verdict": "supported"|"denied"|"inconclusive", '
+    '"rationale": "...", '
+    '"supporting_quotes": [{"index": int, "quote": "..."}], '
+    '"denying_quotes": [{"index": int, "quote": "..."}]}, '
+    "where index is the number of the CITATION and quote is a passage copied "
+    "verbatim from it."
+)
+
+NO_EXCERPTS_EN = "(No indexed excerpts.)"
+
+
+def get_summarize_system(language: str = "bg") -> str:
+    """Return the summarize system prompt for the given language."""
+    return SUMMARIZE_SYSTEM_EN if language == "en" else SUMMARIZE_SYSTEM
+
+
+def get_verify_system(language: str = "bg") -> str:
+    """Return the verify system prompt for the given language."""
+    return VERIFY_SYSTEM_EN if language == "en" else VERIFY_SYSTEM
+
+
+def get_prompt_version(language: str = "bg") -> str:
+    """Return the prompt version string for the given language."""
+    return PROMPT_VERSION_EN if language == "en" else PROMPT_VERSION_BG
+
+
+def format_excerpts(hits: list[dict[str, Any]], *, language: str = "bg") -> str:
     if not hits:
-        return NO_EXCERPTS
+        return NO_EXCERPTS_EN if language == "en" else NO_EXCERPTS
+    if language == "en":
+        return "\n\n".join(
+            f"[{i}] document={h.get('metadata', {}).get('document_filename')} "
+            f"chunk={h.get('chunk_id')}\n{h.get('text', '')}"
+            for i, h in enumerate(hits)
+        )
     return "\n\n".join(
         f"[{i}] документ={h.get('metadata', {}).get('document_filename')} "
         f"фрагмент={h.get('chunk_id')}\n{h.get('text', '')}"
@@ -51,7 +108,18 @@ def format_excerpts(hits: list[dict[str, Any]]) -> str:
     )
 
 
-def build_summarize_prompt(title: str | None, hits: list[dict[str, Any]]) -> str:
+def build_summarize_prompt(
+    title: str | None,
+    hits: list[dict[str, Any]],
+    *,
+    language: str = "bg",
+) -> str:
+    if language == "en":
+        return (
+            f"Case title: {title or '-'}\n\n"
+            f"EXCERPTS:\n{format_excerpts(hits, language='en')}\n\n"
+            "JSON:"
+        )
     return (
         f"Заглавие на делото: {title or '-'}\n\n"
         f"ОТКЪСИ:\n{format_excerpts(hits)}\n\n"
@@ -59,7 +127,18 @@ def build_summarize_prompt(title: str | None, hits: list[dict[str, Any]]) -> str
     )
 
 
-def build_verify_prompt(claim: str, hits: list[dict[str, Any]]) -> str:
+def build_verify_prompt(
+    claim: str,
+    hits: list[dict[str, Any]],
+    *,
+    language: str = "bg",
+) -> str:
+    if language == "en":
+        return (
+            f"CLAIM:\n{claim}\n\n"
+            f"CITATIONS:\n{format_excerpts(hits, language='en')}\n\n"
+            "JSON:"
+        )
     return f"ТВЪРДЕНИЕ:\n{claim}\n\nЦИТАТИ:\n{format_excerpts(hits)}\n\nJSON:"
 
 

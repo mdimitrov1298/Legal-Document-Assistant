@@ -50,6 +50,11 @@ class SummarizeRequest(BaseModel):
     top_k: int | None = Field(
         None, ge=1, le=20, description="Defaults to SUMMARIZE_TOP_K (8)"
     )
+    answer_language: str = Field(
+        "auto",
+        pattern=r"^(auto|bg|en)$",
+        description="Language for the answer: auto (from chunks), bg or en",
+    )
 
 
 class SummarizeResponse(BaseModel):
@@ -62,12 +67,18 @@ class SummarizeResponse(BaseModel):
     duration_ms: float = 0.0
     retrieval_ms: float = 0.0
     generation_ms: float = 0.0
+    answer_language: str = "bg"
 
 
 class VerifyRequest(BaseModel):
     claim: str = Field(..., min_length=3, max_length=1000)
     top_k: int | None = Field(
         None, ge=1, le=20, description="Defaults to VERIFY_TOP_K (5)"
+    )
+    answer_language: str = Field(
+        "auto",
+        pattern=r"^(auto|bg|en)$",
+        description="Language for the answer: auto (from chunks), bg or en",
     )
 
 
@@ -93,3 +104,4 @@ class VerifyResponse(BaseModel):
     duration_ms: float = 0.0
     retrieval_ms: float = 0.0
     generation_ms: float = 0.0
+    answer_language: str = "bg"

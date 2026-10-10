@@ -19,7 +19,9 @@ from app.routes import api_router, public_router
 DESCRIPTION = (
     "Diploma prototype: upload, ingest, summarize, verify. "
     "Local Ollama only; no cloud LLM APIs for case document data. "
-    "Case documents: Bulgarian PDF/TXT only. "
+    "Case documents: Bulgarian or English PDF/TXT. "
+    "Language is detected automatically; answer language follows the "
+    "document language or can be overridden per request. "
     "Out of scope: legal interpretation, timelines, classification, "
     "legal conclusions."
 )

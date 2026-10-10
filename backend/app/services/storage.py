@@ -162,7 +162,13 @@ class CaseStore:
     # Documents
 
     def add_document(
-        self, case_id: str, filename: str, content_type: str, data: bytes
+        self,
+        case_id: str,
+        filename: str,
+        content_type: str,
+        data: bytes,
+        *,
+        language: str | None = None,
     ) -> dict:
         with self._lock:
             case = self._case(case_id)
@@ -181,6 +187,7 @@ class CaseStore:
                 "content_type": content_type,
                 "size_bytes": len(data),
                 "sha256": sha256_hex(data),
+                "language": language,
                 "path": str(dest),
                 "uploaded_at": now,
             }

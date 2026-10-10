@@ -11,4 +11,7 @@ httpx==0.28.1
 chromadb==1.0.20
 # Embeddings: optional heavy dep, install for real MiniLM; hash stub works without it
 sentence-transformers==3.3.1
+langdetect==1.0.9
 python-dotenv==1.0.1
+# Optional multilingual embeddings (same 384-dim as MiniLM; not the default yet):
+# sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
