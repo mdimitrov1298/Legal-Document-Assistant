@@ -1,6 +1,8 @@
-import type { SummarizeResponse } from '@/api/types'
+import { useState } from 'react'
+import type { AnswerLanguage, SummarizeResponse } from '@/api/types'
 import { CitationList } from '@/components/CitationList'
 import { GenerationInfo } from '@/components/GenerationInfo'
+import { LanguageSelector } from '@/components/LanguageSelector'
 
 interface SummaryPanelProps {
   result: SummarizeResponse | null
@@ -9,16 +11,25 @@ interface SummaryPanelProps {
   busy: boolean
   /** Another action is running. */
   locked: boolean
-  onSummarize: () => Promise<void>
+  onSummarize: (answerLanguage: AnswerLanguage) => Promise<void>
 }
 
 export function SummaryPanel({ result, ready, busy, locked, onSummarize }: SummaryPanelProps) {
+  const [answerLang, setAnswerLang] = useState<AnswerLanguage>('auto')
+
   return (
     <section className="panel" aria-labelledby="summary-heading" aria-busy={busy}>
       <h2 id="summary-heading">Резюме с цитати</h2>
-      <button type="button" disabled={!ready || busy || locked} onClick={() => void onSummarize()}>
-        {busy ? 'Обобщаване...' : 'Обобщи'}
-      </button>
+      <div className="panel__controls">
+        <LanguageSelector value={answerLang} onChange={setAnswerLang} disabled={busy || locked} />
+        <button
+          type="button"
+          disabled={!ready || busy || locked}
+          onClick={() => void onSummarize(answerLang)}
+        >
+          {busy ? 'Обобщаване...' : 'Обобщи'}
+        </button>
+      </div>
       {!ready && <p className="muted">Първо индексирайте документите.</p>}
       {result && (
         <div className="result">

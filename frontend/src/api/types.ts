@@ -102,6 +102,7 @@ export interface DocumentResponse {
   size_bytes: number
   sha256: string
   uploaded_at: string
+  language?: string
 }
 
 // rag
@@ -138,8 +139,11 @@ export interface Citation {
   verbatim: boolean
 }
 
+export type AnswerLanguage = 'bg' | 'en' | 'auto'
+
 export interface SummarizeRequest {
   top_k?: number
+  answer_language?: AnswerLanguage
 }
 
 export interface SummarizeResponse {
@@ -150,6 +154,7 @@ export interface SummarizeResponse {
   stubbed: boolean
   chunks_used: number
   duration_ms: number
+  answer_language?: string
 }
 
 export type Verdict = 'supported' | 'denied' | 'inconclusive'
@@ -157,6 +162,7 @@ export type Verdict = 'supported' | 'denied' | 'inconclusive'
 export interface VerifyRequest {
   claim: string
   top_k?: number
+  answer_language?: AnswerLanguage
 }
 
 export interface VerifyResponse {
@@ -170,4 +176,5 @@ export interface VerifyResponse {
   model: string
   stubbed: boolean
   duration_ms: number
+  answer_language?: string
 }

@@ -1,7 +1,8 @@
 import { useId, useState, type FormEvent } from 'react'
-import type { VerifyResponse } from '@/api/types'
+import type { AnswerLanguage, VerifyResponse } from '@/api/types'
 import { CitationList } from '@/components/CitationList'
 import { GenerationInfo } from '@/components/GenerationInfo'
+import { LanguageSelector } from '@/components/LanguageSelector'
 import { VerdictBadge } from '@/components/VerdictBadge'
 
 const CLAIM_MIN = 3
@@ -14,18 +15,19 @@ interface VerifyPanelProps {
   busy: boolean
   /** Another action is running. */
   locked: boolean
-  onVerify: (claim: string) => Promise<void>
+  onVerify: (claim: string, answerLanguage: AnswerLanguage) => Promise<void>
 }
 
 export function VerifyPanel({ result, ready, busy, locked, onVerify }: VerifyPanelProps) {
   const [claim, setClaim] = useState('')
+  const [answerLang, setAnswerLang] = useState<AnswerLanguage>('auto')
   const claimId = useId()
   const trimmed = claim.trim()
   const valid = trimmed.length >= CLAIM_MIN && trimmed.length <= CLAIM_MAX
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (valid) void onVerify(trimmed)
+    if (valid) void onVerify(trimmed, answerLang)
   }
 
   return (
@@ -41,12 +43,15 @@ export function VerifyPanel({ result, ready, busy, locked, onVerify }: VerifyPan
           value={claim}
           maxLength={CLAIM_MAX}
           onChange={(e) => setClaim(e.target.value)}
-          placeholder="Въведете фактическо твърдение за проверка по документите (на български)..."
+          placeholder="Въведете фактическо твърдение за проверка по документите..."
           disabled={!ready}
         />
-        <button type="submit" disabled={!ready || busy || locked || !valid}>
-          {busy ? 'Проверка...' : 'Провери'}
-        </button>
+        <div className="panel__controls">
+          <LanguageSelector value={answerLang} onChange={setAnswerLang} disabled={busy || locked} />
+          <button type="submit" disabled={!ready || busy || locked || !valid}>
+            {busy ? 'Проверка...' : 'Провери'}
+          </button>
+        </div>
       </form>
       {!ready && <p className="muted">Първо индексирайте документите.</p>}
       {result && (

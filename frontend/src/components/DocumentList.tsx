@@ -1,4 +1,5 @@
 import type { DocumentResponse } from '@/api/types'
+import { LanguageBadge } from '@/components/LanguageBadge'
 import { formatBytes, formatDateTime } from '@/utils/format'
 
 interface DocumentListProps {
@@ -23,7 +24,9 @@ export function DocumentList({ documents, locked, onDelete }: DocumentListProps)
       {documents.map((doc) => (
         <li key={doc.id} className="document-list__item">
           <div>
-            <span className="document-list__name">{doc.filename}</span>
+            <span className="document-list__name">
+              {doc.filename} <LanguageBadge language={doc.language} />
+            </span>
             <span className="muted">
               {formatBytes(doc.size_bytes)}, {formatDateTime(doc.uploaded_at)}
             </span>

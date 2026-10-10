@@ -348,3 +348,60 @@
   background: #fff3cd;
   color: #6b4a00;
 }
+
+/* LanguageBadge */
+.lang-badge {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+.lang-badge--bg {
+  background: #e4ecfa;
+  color: var(--color-primary);
+}
+
+.lang-badge--en {
+  background: #e3f4e8;
+  color: var(--color-ok);
+}
+
+.lang-badge--other {
+  background: #eceff3;
+  color: #555;
+}
+
+/* LanguageSelector */
+.language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.language-selector__label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.language-selector__select {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: var(--color-surface);
+}
+
+/* Panel controls row */
+.panel__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}

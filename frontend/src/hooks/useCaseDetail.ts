@@ -4,6 +4,7 @@ import { isAbortError, toApiError, type ApiError } from '@/api/client'
 import { deleteDocument, listDocuments, uploadDocument } from '@/api/documents'
 import { getIndexStats, ingestCase, summarizeCase, verifyClaim } from '@/api/rag'
 import type {
+  AnswerLanguage,
   CaseResponse,
   DocumentResponse,
   IndexStatsResponse,
@@ -129,17 +130,22 @@ export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResp
   )
 
   const summarize = useCallback(
-    () =>
+    (answerLanguage: AnswerLanguage = 'auto') =>
       run('summarize', async () => {
-        setSummary(await summarizeCase(caseId))
+        const body = answerLanguage === 'auto' ? {} : { answer_language: answerLanguage }
+        setSummary(await summarizeCase(caseId, body))
       }),
     [caseId, run],
   )
 
   const verify = useCallback(
-    (claim: string) =>
+    (claim: string, answerLanguage: AnswerLanguage = 'auto') =>
       run('verify', async () => {
-        setVerification(await verifyClaim(caseId, { claim }))
+        const body =
+          answerLanguage === 'auto'
+            ? { claim }
+            : { claim, answer_language: answerLanguage }
+        setVerification(await verifyClaim(caseId, body))
       }),
     [caseId, run],
   )
