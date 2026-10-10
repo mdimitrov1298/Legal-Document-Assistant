@@ -12,6 +12,14 @@ HITS = [
     }
 ]
 
+HITS_EN = [
+    {
+        "chunk_id": "d1:0",
+        "text": "The deadline is 30 days.",
+        "metadata": {"document_filename": "contract.txt"},
+    }
+]
+
 
 def test_verify_prompt_numbers_quotes():
     text = prompts.build_verify_prompt("Срокът е 30 дни", HITS)
@@ -55,3 +63,59 @@ def test_bggpt_v1_gemma_uses_ollama_chat_template():
         assert rendered.raw is False
         assert rendered.prompt == "P"
         assert rendered.system == "S"
+
+
+# --- English prompt tests ---
+
+
+def test_english_system_prompts_request_json():
+    for system in (prompts.SUMMARIZE_SYSTEM_EN, prompts.VERIFY_SYSTEM_EN):
+        assert "JSON" in system
+        assert "English" in system
+    assert "inconclusive" in prompts.VERIFY_SYSTEM_EN
+
+
+def test_english_verify_prompt():
+    text = prompts.build_verify_prompt(
+        "The deadline is 30 days", HITS_EN, language="en"
+    )
+    assert "CLAIM:\nThe deadline is 30 days" in text
+    assert "[0] document=contract.txt chunk=d1:0\nThe deadline is 30 days." in text
+
+
+def test_english_summarize_prompt():
+    text = prompts.build_summarize_prompt("Case", HITS_EN, language="en")
+    assert "Case title: Case" in text
+    assert "EXCERPTS:" in text
+
+
+def test_english_summarize_prompt_no_hits():
+    text = prompts.build_summarize_prompt("Case", [], language="en")
+    assert prompts.NO_EXCERPTS_EN in text
+
+
+def test_get_summarize_system_bg():
+    assert prompts.get_summarize_system("bg") == prompts.SUMMARIZE_SYSTEM
+
+
+def test_get_summarize_system_en():
+    assert prompts.get_summarize_system("en") == prompts.SUMMARIZE_SYSTEM_EN
+
+
+def test_get_verify_system_bg():
+    assert prompts.get_verify_system("bg") == prompts.VERIFY_SYSTEM
+
+
+def test_get_verify_system_en():
+    assert prompts.get_verify_system("en") == prompts.VERIFY_SYSTEM_EN
+
+
+def test_get_prompt_version():
+    assert prompts.get_prompt_version("bg") == "bg-v1"
+    assert prompts.get_prompt_version("en") == "en-v1"
+
+
+def test_en_prompt_uses_same_verdict_labels():
+    """English prompts use the same verdict labels as Bulgarian."""
+    for label in ("supported", "denied", "inconclusive"):
+        assert label in prompts.VERIFY_SYSTEM_EN
