@@ -43,3 +43,15 @@ def test_render_bggpt_inst_template():
     assert rendered.system is None
     assert rendered.prompt == "[INST] S\n\nP [/INST]"
     assert prompts.render_for_model("bggpt-7b", "P", None).prompt == "[INST] P [/INST]"
+
+
+def test_bggpt_v1_gemma_uses_ollama_chat_template():
+    for model in (
+        "s_emanuilov/BgGPT-v1.0:9b",
+        "INSAIT-Institute/BgGPT-Gemma-2-9B-IT-v1.0",
+        "pazoff/bggpt-gemma-2-9b-it-v1.0.q4_k_m.gguf",
+    ):
+        rendered = prompts.render_for_model(model, "P", "S")
+        assert rendered.raw is False
+        assert rendered.prompt == "P"
+        assert rendered.system == "S"

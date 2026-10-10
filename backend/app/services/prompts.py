@@ -1,9 +1,12 @@
 """Bulgarian prompts for summarize and verify, plus chat template handling.
 
 The system prompts are identical for every model so A/B runs stay comparable.
-The only model-specific difference is the BgGPT instruction template: BgGPT is
-Mistral-based and expects `[INST] ... [/INST]`. A GGUF imported with a bare
-Modelfile has no template, so the prompt is rendered here and sent raw.
+The only model-specific difference is the legacy BgGPT instruction template:
+BgGPT-7B-Instruct v0.x is Mistral-based and expects `[INST] ... [/INST]`. A GGUF
+imported with a bare Modelfile has no template, so the prompt is rendered here
+and sent raw. BgGPT v1.0 is Gemma 2 based; its Ollama builds (for example
+`s_emanuilov/BgGPT-v1.0:9b`) ship the Gemma chat template, so it is left to
+Ollama like every other model.
 """
 
 from __future__ import annotations
@@ -60,8 +63,17 @@ def build_verify_prompt(claim: str, hits: list[dict[str, Any]]) -> str:
     return f"ТВЪРДЕНИЕ:\n{claim}\n\nЦИТАТИ:\n{format_excerpts(hits)}\n\nJSON:"
 
 
+_GEMMA_BGGPT_MARKERS = ("v1.0", "v1-0", "gemma")
+
+
 def is_bggpt(model: str) -> bool:
     return "bggpt" in model.lower()
+
+
+def needs_inst_template(model: str) -> bool:
+    """True only for the Mistral-based BgGPT v0.x, not Gemma-based BgGPT v1.0."""
+    name = model.lower()
+    return is_bggpt(name) and not any(m in name for m in _GEMMA_BGGPT_MARKERS)
 
 
 @dataclass(frozen=True)
@@ -73,7 +85,7 @@ class RenderedPrompt:
 
 def render_for_model(model: str, prompt: str, system: str | None) -> RenderedPrompt:
     """Apply the model's chat template when Ollama cannot be relied on for it."""
-    if is_bggpt(model):
+    if needs_inst_template(model):
         body = f"{system}\n\n{prompt}" if system else prompt
         return RenderedPrompt(prompt=f"[INST] {body} [/INST]", system=None, raw=True)
     return RenderedPrompt(prompt=prompt, system=system, raw=False)
