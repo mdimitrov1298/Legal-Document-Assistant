@@ -20,6 +20,7 @@ import json
 import os
 import platform
 import re
+import resource
 import shutil
 import subprocess
 import sys
@@ -153,6 +154,12 @@ class RunWriter:
         self.fh.flush()
 
 
+def peak_rss_bytes() -> int:
+    """Peak RSS of this process (ru_maxrss is bytes on macOS, KiB on Linux)."""
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return int(peak if sys.platform == "darwin" else peak * 1024)
+
+
 def _citations(items: list[Any]) -> list[dict[str, Any]]:
     return [c.model_dump() for c in items]
 
@@ -203,6 +210,8 @@ async def _run_passage(
                 "summary": summary.summary,
                 "citations": _citations(summary.citations),
                 "chunks_used": summary.chunks_used,
+                "retrieval_ms": summary.retrieval_ms,
+                "generation_ms": summary.generation_ms,
                 "model": summary.model,
                 "stubbed": summary.stubbed,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 1),
@@ -241,6 +250,8 @@ async def _run_passage(
                 "supporting_quotes": _citations(result.supporting_quotes),
                 "denying_quotes": _citations(result.denying_quotes),
                 "retrieved_chunk_ids": [q.chunk_id for q in result.retrieved_quotes],
+                "retrieval_ms": result.retrieval_ms,
+                "generation_ms": result.generation_ms,
                 "model": result.model,
                 "stubbed": result.stubbed,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 1),
@@ -314,6 +325,8 @@ async def run_evaluation(config: RunConfig, *, llm: OllamaClient | None = None) 
                         "stubbed_outputs": counters["stubbed"],
                         "errors": counters["errors"],
                         "embedding_stubbed": get_embedding_backend() == "hash_stub",
+                        "harness_peak_rss_bytes": peak_rss_bytes(),
+                        "ollama_loaded_models": await client.running_models(),
                     }
                 )
             return out_path

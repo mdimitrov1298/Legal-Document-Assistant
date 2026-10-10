@@ -16,11 +16,12 @@ eval-v0.1/
   passages/
     P1.txt               # synthetic normative-style rules (S1)
     P2.txt               # synthetic narrative of a dispute (S2)
+    P3.txt               # EUR-Lex-Sum BG, CELEX 31998R2866 (S3)
     P4.txt               # synthetic second document on the P2 case (S4)
   claims/
     claims.jsonl         # seed claims with gold labels and evidence
   gold/
-    summaries/           # reference summary pointers (empty until P3 is sourced)
+    summaries/           # reference summaries P1.txt to P4.txt
 ```
 
 ## Passages
@@ -29,7 +30,7 @@ eval-v0.1/
 |----|--------|-------|--------|-----------|
 | P1 | draft | normative | synthetic | S1, S5 |
 | P2 | draft | narrative | synthetic | S2, S5 |
-| P3 | pending | long EU legal | EUR-Lex-Sum (bg), not sourced yet, `celex_id` null | S3, S5 |
+| P3 | draft | long EU legal | EUR-Lex-Sum (bg), CELEX 31998R2866, CC-BY-SA 4.0 | S3 |
 | P4 | draft | second document, same case as P2 | synthetic | S4, S5 |
 
 P1, P2 and P4 are **synthetic demo texts** written for this package. Every file
@@ -63,7 +64,8 @@ Per passage: `id`, `status`, `path`, `language`, `genre`, `source`,
 | `trap_type` | Optional: `changed_number`, `inverted_fact`, `multi_document`, `cross_document_contradiction`, `missing_fact`, `invented_date` |
 | `annotator_notes` | Short rationale for the gold label |
 
-The draft has 18 claims (6 SUPPORTED, 6 REFUTED, 6 NEI). System verdicts map
+The draft has 25 claims (9 SUPPORTED, 8 REFUTED, 8 NEI): C1 to C18 on the
+synthetic passages and C19 to C25 on P3. System verdicts map
 to gold labels as `supported -> SUPPORTED`, `denied -> REFUTED`,
 `inconclusive -> NEI`.
 
@@ -82,7 +84,7 @@ Each passage is ingested into a temporary case in an isolated work directory
 record (git commit, model tag, Ollama version, num_ctx, temperature, top_k,
 chunk size and overlap, embedding backend and model, prompt version, package
 hash, timestamp) followed by `ingest`, `summary` and `verify` records and a
-`run_end` footer. Use `--repeats 3` for latency medians and `--no-stub` to
+`run_end` footer. Use `--repeats 3` for latency medians (the protocol requires three repeats) and `--no-stub` to
 fail instead of stubbing when Ollama is down.
 
 Runs are written to `eval/runs/` (gitignored). Runs with stubbed outputs,

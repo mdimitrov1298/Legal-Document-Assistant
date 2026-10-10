@@ -114,6 +114,26 @@ class OllamaClient:
             return None
         return self.is_model_installed(names)
 
+    async def running_models(self) -> list[dict]:
+        """Loaded models from `/api/ps` (size and size_vram in bytes); [] if down."""
+        try:
+            async with self._client(self.health_timeout) as client:
+                r = await client.get("/api/ps")
+                r.raise_for_status()
+                models = r.json().get("models") or []
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Ollama ps failed: %s", exc)
+            return []
+        return [
+            {
+                "name": m.get("name") or m.get("model"),
+                "size_bytes": m.get("size"),
+                "size_vram_bytes": m.get("size_vram"),
+            }
+            for m in models
+            if isinstance(m, dict)
+        ]
+
     async def version(self) -> str | None:
         try:
             async with self._client(self.health_timeout) as client:

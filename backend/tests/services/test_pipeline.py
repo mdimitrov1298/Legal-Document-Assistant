@@ -145,3 +145,29 @@ async def test_verify_unknown_verdict_becomes_inconclusive(rag_env, install_llm)
     install_llm(_respond({"verdict": "maybe", "rationale": "?"}))
     result = await pipeline.verify_claim("case-1", "Нещо неясно")
     assert result.verdict.value == "inconclusive"
+
+
+def test_parse_json_object_handles_markdown_code_block():
+    from app.services.pipeline import _parse_json_object
+
+    raw = '```json\n{\n  "verdict": "supported",\n  "rationale": "ok"\n}\n```'
+    assert _parse_json_object(raw) == {"verdict": "supported", "rationale": "ok"}
+
+
+def test_parse_json_object_handles_unterminated_code_block():
+    from app.services.pipeline import _parse_json_object
+
+    raw = '```JSON\n{"verdict": "denied", "rationale": "x"}'
+    assert _parse_json_object(raw)["verdict"] == "denied"
+
+
+def test_verdict_regex_recovers_from_truncated_json():
+    # C24 case from run 20261004T073507Z: fenced JSON cut off mid-field
+    from app.services.pipeline import _VERDICT_FIELD, _parse_json_object
+
+    raw = (
+        '```json\n{\n  "verdict": "supported",\n  "rationale": "т",\n  "supporting_quo'
+    )
+    assert _parse_json_object(raw) == {}
+    m = _VERDICT_FIELD.search(raw)
+    assert m and m.group(1) == "supported"

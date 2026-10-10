@@ -60,6 +60,8 @@ class SummarizeResponse(BaseModel):
     stubbed: bool = False
     chunks_used: int = 0
     duration_ms: float = 0.0
+    retrieval_ms: float = 0.0
+    generation_ms: float = 0.0
 
 
 class VerifyRequest(BaseModel):
@@ -89,3 +91,5 @@ class VerifyResponse(BaseModel):
     model: str
     stubbed: bool = False
     duration_ms: float = 0.0
+    retrieval_ms: float = 0.0
+    generation_ms: float = 0.0

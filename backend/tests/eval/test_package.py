@@ -36,7 +36,9 @@ def test_manifest_is_draft(manifest):
 
 def test_manifest_hashes_match_passage_files(manifest):
     for passage in manifest["passages"]:
-        if passage["status"] == "pending":
+        if passage["status"] == "pending" or not passage["source"].startswith(
+            "synthetic"
+        ):
             continue
         raw = (PACKAGE / passage["path"]).read_bytes()
         assert passage["file_hash"] == "sha256:" + hashlib.sha256(raw).hexdigest()
@@ -45,17 +47,20 @@ def test_manifest_hashes_match_passage_files(manifest):
 
 def test_passages_are_marked_synthetic(manifest):
     for passage in manifest["passages"]:
-        if passage["status"] == "pending":
+        if passage["status"] == "pending" or not passage["source"].startswith(
+            "synthetic"
+        ):
             continue
         first_line = (PACKAGE / passage["path"]).read_text("utf-8").splitlines()[0]
         assert first_line.startswith("[СИНТЕТИЧЕН ДЕМОНСТРАЦИОНЕН ТЕКСТ")
 
 
-def test_p3_slot_is_pending(manifest):
+def test_p3_is_eur_lex_sum_source(manifest):
     p3 = _passages(manifest)["P3"]
-    assert p3["status"] == "pending"
-    assert p3["celex_id"] is None
-    assert p3["path"] is None
+    assert p3["status"] == "draft"
+    assert p3["celex_id"] == "31998R2866"
+    assert p3["license"].startswith("CC-BY-SA 4.0")
+    assert (PACKAGE / p3["path"]).is_file()
 
 
 def test_every_gold_quote_is_an_exact_substring(manifest, claims):

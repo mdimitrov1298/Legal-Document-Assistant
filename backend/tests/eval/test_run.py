@@ -72,9 +72,9 @@ async def test_run_writes_metadata_and_records(tmp_path: Path):
     assert "commit" in header["git"]
 
     kinds = [r["type"] for r in records]
-    assert kinds.count("ingest") == 3
-    assert kinds.count("summary") == 3
-    assert kinds.count("verify") == 18
+    assert kinds.count("ingest") == 4
+    assert kinds.count("summary") == 4
+    assert kinds.count("verify") == 25
     verify = [r for r in records if r["type"] == "verify"]
     assert {r["predicted_label"] for r in verify} == {"SUPPORTED"}
     assert all(r["stubbed"] is False for r in verify)
@@ -85,10 +85,12 @@ async def test_run_writes_metadata_and_records(tmp_path: Path):
     assert p4_ingest["documents"] == ["P4", "P2"]
     assert footer["stubbed_outputs"] == 0
     assert footer["errors"] == 0
+    assert footer["harness_peak_rss_bytes"] > 0
+    assert all("retrieval_ms" in r and "generation_ms" in r for r in verify)
 
     result = score_records(header, records, footer)
-    assert result["claims_scored"] == 18
-    assert result["label_accuracy"] == pytest.approx(6 / 18)
+    assert result["claims_scored"] == 25
+    assert result["label_accuracy"] == pytest.approx(9 / 25)
     assert result["verbatim_citation_rate"] == 1.0
     assert result["valid_for_comparison"] is False
     assert any("hash_stub" in r for r in result["invalid_reasons"])
@@ -102,7 +104,7 @@ async def test_stubbed_run_is_flagged(tmp_path: Path):
     header, records, footer = load_run(path)
     assert header["ollama"]["reachable"] is False
     assert header["ollama"]["version"] is None
-    assert footer["stubbed_outputs"] == 21
+    assert footer["stubbed_outputs"] == 29
     result = score_records(header, records, footer)
     assert result["valid_for_comparison"] is False
     assert any("stubbed" in r for r in result["invalid_reasons"])

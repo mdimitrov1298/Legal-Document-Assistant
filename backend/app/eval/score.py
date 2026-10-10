@@ -144,6 +144,14 @@ def score_records(header: dict, records: list[dict], footer: dict) -> dict[str, 
         "median_verify_latency_ms": _median(
             [r["latency_ms"] for r in verify if r.get("latency_ms") is not None]
         ),
+        "median_verify_retrieval_ms": _median(
+            [r["retrieval_ms"] for r in verify if r.get("retrieval_ms") is not None]
+        ),
+        "median_verify_generation_ms": _median(
+            [r["generation_ms"] for r in verify if r.get("generation_ms") is not None]
+        ),
+        "harness_peak_rss_bytes": footer.get("harness_peak_rss_bytes"),
+        "ollama_loaded_models": footer.get("ollama_loaded_models"),
         "median_summary_latency_ms": _median(
             [r["latency_ms"] for r in summaries if r.get("latency_ms") is not None]
         ),
@@ -183,6 +191,9 @@ def to_markdown(result: dict[str, Any], source: str = "") -> str:
         ("Verbatim citation rate (summary)", result["summary_verbatim_rate"]),
         ("Median verify latency (ms)", result["median_verify_latency_ms"]),
         ("Median summary latency (ms)", result["median_summary_latency_ms"]),
+        ("Median verify retrieval (ms)", result.get("median_verify_retrieval_ms")),
+        ("Median verify generation (ms)", result.get("median_verify_generation_ms")),
+        ("Harness peak RSS (bytes)", result.get("harness_peak_rss_bytes")),
         ("Stubbed outputs", result["stubbed_outputs"]),
         ("Errors", result["errors"]),
     ]

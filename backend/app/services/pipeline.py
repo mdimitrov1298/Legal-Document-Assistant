@@ -35,8 +35,18 @@ def _elapsed_ms(started: float) -> float:
     return round((time.perf_counter() - started) * 1000, 1)
 
 
+_CODE_FENCE = re.compile(r"```(?:json|JSON)?\s*([\s\S]*?)(?:```|$)")
+_VERDICT_FIELD = re.compile(r'"verdict"\s*:\s*"([A-Za-z_]+)"')
+
+
+def _strip_code_fence(raw: str) -> str:
+    """Return the body of a markdown code block if the reply is wrapped in one."""
+    m = _CODE_FENCE.search(raw)
+    return m.group(1).strip() if m else raw
+
+
 def _parse_json_object(raw: str) -> dict:
-    raw = raw.strip()
+    raw = _strip_code_fence(raw.strip())
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
@@ -146,12 +156,16 @@ async def summarize_case(case_id: str, top_k: int | None = None) -> SummarizeRes
     vs = get_vectorstore()
     llm = get_llm()
 
+    retrieval_started = time.perf_counter()
     hits = vs.query(case_id, case.get("title") or SUMMARY_FALLBACK_QUERY, top_k=top_k)
     if not hits:
         hits = vs.query(case_id, SUMMARY_FALLBACK_QUERY, top_k=top_k)
+    retrieval_ms = _elapsed_ms(retrieval_started)
 
     prompt = prompts.build_summarize_prompt(case.get("title"), hits)
+    generation_started = time.perf_counter()
     raw, stubbed = await llm.generate(prompt, system=prompts.SUMMARIZE_SYSTEM)
+    generation_ms = _elapsed_ms(generation_started)
     parsed = _parse_json_object(raw)
 
     if parsed.get("summary"):
@@ -182,6 +196,8 @@ async def summarize_case(case_id: str, top_k: int | None = None) -> SummarizeRes
         stubbed=stubbed,
         chunks_used=len(hits),
         duration_ms=_elapsed_ms(started),
+        retrieval_ms=retrieval_ms,
+        generation_ms=generation_ms,
     )
 
 
@@ -194,16 +210,22 @@ async def verify_claim(
     vs = get_vectorstore()
     llm = get_llm()
 
+    retrieval_started = time.perf_counter()
     hits = vs.query(case_id, claim, top_k=top_k)
     retrieved = [citation_from_hit(h) for h in hits]
+    retrieval_ms = _elapsed_ms(retrieval_started)
 
     prompt = prompts.build_verify_prompt(claim, hits)
+    generation_started = time.perf_counter()
     raw, stubbed = await llm.generate(prompt, system=prompts.VERIFY_SYSTEM)
+    generation_ms = _elapsed_ms(generation_started)
     parsed = _parse_json_object(raw)
 
     if not parsed:
+        # Truncated or otherwise invalid JSON: still recover an explicit verdict.
+        m = _VERDICT_FIELD.search(raw)
         parsed = {
-            "verdict": "inconclusive",
+            "verdict": m.group(1) if m else "inconclusive",
             "rationale": raw[:500] or "Could not parse model response.",
         }
 
@@ -245,4 +267,6 @@ async def verify_claim(
         model=llm.model_name,
         stubbed=stubbed,
         duration_ms=_elapsed_ms(started),
+        retrieval_ms=retrieval_ms,
+        generation_ms=generation_ms,
     )

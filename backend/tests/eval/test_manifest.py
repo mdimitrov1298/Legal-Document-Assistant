@@ -24,10 +24,10 @@ def test_load_committed_package():
     package = load_package(PACKAGE)
     assert package.version == "0.1"
     assert package.status == "draft"
-    assert [p.id for p in package.runnable_passages()] == ["P1", "P2", "P4"]
-    assert package.passages["P3"].is_pending
+    assert [p.id for p in package.runnable_passages()] == ["P1", "P2", "P3", "P4"]
+    assert not package.passages["P3"].is_pending
     assert package.passages["P4"].companion_passages == ("P2",)
-    assert len(package.claims) == 18
+    assert len(package.claims) == 25
     assert package.read_passage("P1").startswith("[СИНТЕТИЧЕН")
     assert package.manifest_sha256().startswith("sha256:")
 

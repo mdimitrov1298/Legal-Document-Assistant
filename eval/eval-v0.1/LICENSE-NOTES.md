@@ -4,7 +4,7 @@
 |---------|------------|-------------|---------------|
 | P1 | Original synthetic text written for this project | Same terms as this repository | None (fictional) |
 | P2 | Original synthetic text written for this project | Same terms as this repository | None (fictional people and companies) |
-| P3 | Reserved for a Bulgarian reference text from EUR-Lex-Sum | To be copied from the dataset card when the text is sourced; record `celex_id`, `split` and `retrieved_at` in the manifest | Public EU legal text |
+| P3 | EUR-Lex-Sum Bulgarian train split, CELEX 31998R2866 (Council Regulation (EC) No 2866/98), retrieved 2026-10-04 | CC-BY-SA 4.0 (EUR-Lex-Sum dataset); attribute the dataset and share derivatives alike | Public EU legal text, no personal data |
 | P4 | Original synthetic text written for this project | Same terms as this repository | None (fictional people and companies) |
 
 Notes:
