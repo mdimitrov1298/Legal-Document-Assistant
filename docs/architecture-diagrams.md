@@ -25,7 +25,7 @@ graph TB
     subgraph Runtime["Local LLM runtime (Ollama)"]
         OL_GEN[POST /api/generate]
         OL_TAGS[GET /api/tags]
-        OL_MODEL[qwen2.5:7b default]
+        OL_MODEL[BgGPT v1.0 9B default, qwen2.5:7b fallback]
         OL_GEN --> OL_MODEL
     end
 
@@ -287,7 +287,7 @@ erDiagram
         string run_id PK
         string package_version "eval-v0.1"
         string manifest_hash
-        string model_tag "qwen2.5:7b, bggpt-7b, llama3.1:8b"
+        string model_tag "s_emanuilov/BgGPT-v1.0:9b, qwen2.5:7b, llama3.1:8b"
         string quantization
         int num_ctx
         float temperature
@@ -564,7 +564,7 @@ graph LR
     style ModelVol fill:#50c878
 ```
 
-Models are pulled once inside the Ollama container (`docker compose exec ollama ollama pull qwen2.5:7b`). Ports 8000 and 11434 are also published on the host for the OpenAPI docs and diagnostics.
+Models are pulled once inside the Ollama container (`docker compose exec ollama ollama pull s_emanuilov/BgGPT-v1.0:9b`, or `qwen2.5:7b` as the low-memory fallback). Ports 8000 and 11434 are also published on the host for the OpenAPI docs and diagnostics.
 
 ## Error Handling and Stub Fallback Flow
 
@@ -608,11 +608,9 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start([Select generator]) --> Which{Generator role}
-    Which -->|Baseline| Qwen[ollama pull qwen2.5:7b]
+    Which -->|Fallback| Qwen[ollama pull qwen2.5:7b]
     Which -->|Control| Llama[ollama pull llama3.1:8b]
-    Which -->|A/B| GGUF[Download BgGPT-7B-Instruct-v0.2<br/>Q4_K_M GGUF]
-    GGUF --> Modelfile[Modelfile: FROM path to GGUF<br/>Mistral INST template]
-    Modelfile --> Create[ollama create bggpt-7b -f Modelfile]
+    Which -->|Default| Create[ollama pull s_emanuilov/BgGPT-v1.0:9b<br/>Gemma 2 template built in]
     Qwen --> SetEnv[Set OLLAMA_MODEL to the tag<br/>restart API]
     Llama --> SetEnv
     Create --> SetEnv

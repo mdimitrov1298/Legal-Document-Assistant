@@ -1,6 +1,7 @@
 # Local stack: Ollama + API + web UI.
 #   docker compose up --build
-#   docker compose exec ollama ollama pull qwen2.5:7b
+#   docker compose exec ollama ollama pull s_emanuilov/BgGPT-v1.0:9b
+#   (low-memory fallback: ollama pull qwen2.5:7b and set OLLAMA_MODEL=qwen2.5:7b)
 # UI: http://localhost:8080  API: http://localhost:8000/docs
 services:
   ollama:
@@ -17,7 +18,7 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       OLLAMA_BASE_URL: 'http://ollama:11434'
-      OLLAMA_MODEL: '${OLLAMA_MODEL:-qwen2.5:7b}'
+      OLLAMA_MODEL: '${OLLAMA_MODEL:-s_emanuilov/BgGPT-v1.0:9b}'
       OLLAMA_NUM_CTX: '${OLLAMA_NUM_CTX:-4096}'
       OLLAMA_GENERATE_TIMEOUT: '${OLLAMA_GENERATE_TIMEOUT:-300}'
       EMBEDDING_BACKEND: '${EMBEDDING_BACKEND:-sentence-transformers}'

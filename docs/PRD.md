@@ -29,7 +29,7 @@ All processing happens on the user's machine: text extraction, embeddings, the v
 The product consists of two parts that share one retrieval pipeline:
 
 - **Part I:** Case Assistant, the interactive application (ingest, summarize, verify).
-- **Part II:** Evaluation Harness, a batch protocol that compares three local generators (baseline `qwen2.5:7b`, A/B partner BgGPT-7B-Instruct-v0.2, control `llama3.1:8b`) on a small, versioned Bulgarian evaluation package (eval-v0.1) with constant retrieval parameters.
+- **Part II:** Evaluation Harness, a batch protocol that compares three local generators (baseline `qwen2.5:7b`, A/B partner BgGPT v1.0 9B (`s_emanuilov/BgGPT-v1.0:9b`), control `llama3.1:8b`) on a small, versioned Bulgarian evaluation package (eval-v0.1) with constant retrieval parameters.
 
 ---
 
@@ -93,7 +93,7 @@ The product consists of two parts that share one retrieval pipeline:
     - Marks each quote `verbatim: true` when it occurs exactly (after whitespace normalisation) in the stored chunk text.
     - Non-verbatim quotes from the LLM are kept but flagged, so the user sees where the model paraphrased.
 - **LLM Client**
-    - Calls local Ollama `POST /api/generate` (default model `qwen2.5:7b`, configurable via `OLLAMA_MODEL`), with `OLLAMA_NUM_CTX=4096` and `OLLAMA_TEMPERATURE=0.0` by default.
+    - Calls local Ollama `POST /api/generate` (default model `s_emanuilov/BgGPT-v1.0:9b`, BgGPT v1.0 9B; fallback `qwen2.5:7b` for low-memory machines; configurable via `OLLAMA_MODEL`), with `OLLAMA_NUM_CTX=4096` and `OLLAMA_TEMPERATURE=0.0` by default.
     - Bulgarian system prompts; model-specific chat template handling (Mistral-style `[INST] ... [/INST]` for BgGPT).
     - When Ollama is unreachable and `OLLAMA_STUB_ON_UNAVAILABLE=true`, returns a structured stub response flagged `stubbed: true`, with raw chunk excerpts as citations (always verbatim). With stub mode disabled the API returns `503 llm_unavailable`.
 
@@ -132,8 +132,8 @@ The product consists of two parts that share one retrieval pipeline:
 - **Scorer CLI**
     - `python -m app.eval.score`: computes automatic metrics from run logs (label accuracy, macro-F1, NEI precision/recall, exact quote match, latency) and exports blinded sheets for human annotation.
 - **Generators under comparison**
-    - Baseline: `qwen2.5:7b` (Ollama tag, about 4.7 GB, Apache 2.0 licence).
-    - A/B: BgGPT-7B-Instruct-v0.2, Q4_K_M GGUF (about 4.4 GB, Apache 2.0 licence) imported with a Modelfile as `bggpt-7b`.
+    - Baseline: `qwen2.5:7b` (Ollama tag, about 4.7 GB, Apache 2.0 licence); after the comparison it is the low-memory fallback.
+    - A/B: BgGPT v1.0 9B, community Ollama build `s_emanuilov/BgGPT-v1.0:9b` (Q4, about 5.8 GB on disk, Gemma Terms of Use); after the comparison it is the default generator.
     - Control: `llama3.1:8b` (Ollama tag, about 4.9 GB, Llama 3.1 Community License), without official Bulgarian support.
 - **Metrics**
     - Faithfulness of summaries (human, Likert 1 to 5, with an error taxonomy: names, dates, numeric thresholds, qualifications, added facts).
@@ -220,7 +220,7 @@ The product consists of two parts that share one retrieval pipeline:
 - **Text extraction:** pypdf 5.1.0
 - **Vector store:** Chroma 1.0.20 (`PersistentClient`, on disk)
 - **Embeddings:** sentence-transformers 3.3.1 with `all-MiniLM-L6-v2` on CPU; optional Ollama `nomic-embed-text`; `hash_stub`
-- **LLM runtime:** Ollama on `127.0.0.1:11434`; models `qwen2.5:7b` (default), `bggpt-7b` (GGUF import), `llama3.1:8b`
+- **LLM runtime:** Ollama on `127.0.0.1:11434`; models `s_emanuilov/BgGPT-v1.0:9b` (default, BgGPT v1.0 9B), `qwen2.5:7b` (fallback), `llama3.1:8b` (evaluation control)
 - **Evaluation:** Python CLI inside the backend package (`python -m app.eval.run`, `python -m app.eval.score`), JSON and JSONL artefacts
 - **Backend tooling:** pytest 8.3.4, pytest-asyncio 0.25.0, ruff 0.16.9, pre-commit 4.6.2
 - **Packaging:** optional docker compose setup (web UI on port 8080 served by nginx, which proxies `/api` to `backend:8000`; Ollama service on 11434); everything still runs on the local machine
@@ -294,8 +294,8 @@ flowchart TB
         end
 
         subgraph Runtime["Ollama :11434"]
-            QWEN["qwen2.5:7b (baseline)"]
-            BGGPT["bggpt-7b (A/B)"]
+            QWEN["qwen2.5:7b (fallback)"]
+            BGGPT["BgGPT v1.0 9B (default)"]
             LLAMA["llama3.1:8b (control)"]
         end
 

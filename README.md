@@ -18,7 +18,7 @@ case content. The target machine has about 16 GB of RAM.
 |-------|--------|
 | API | FastAPI (Python 3.12), versioned under `/api/v1`, uniform error envelope |
 | UI | React 19 + Vite + TypeScript, plain CSS, Bulgarian UI copy |
-| LLM runtime | Ollama only: default `qwen2.5:7b`; A/B `bggpt-7b` (imported GGUF); control `llama3.1:8b` |
+| LLM runtime | Ollama only: default `s_emanuilov/BgGPT-v1.0:9b` (BgGPT v1.0 9B, about 7.7 GB); fallback `qwen2.5:7b` for low-memory machines (about 4.9 GB); evaluation control `llama3.1:8b` |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` on CPU (default); optional Ollama `nomic-embed-text`; `hash_stub` for CI/offline |
 | Vector store | Chroma `PersistentClient`, one collection per case |
 | Formats | PDF and TXT, Bulgarian only |
@@ -44,7 +44,8 @@ Requirements: Python 3.12+, Node 20.19+ (or 22.12+), [Ollama](https://ollama.com
 ```bash
 # 1. Ollama (separate terminal)
 ollama serve
-ollama pull qwen2.5:7b
+ollama pull s_emanuilov/BgGPT-v1.0:9b
+# low-memory fallback: ollama pull qwen2.5:7b and set OLLAMA_MODEL=qwen2.5:7b
 
 # 2. Backend
 cp .env.example .env
@@ -80,26 +81,31 @@ and citations taken directly from the retrieved chunks, and
 `/api/v1/health` reports `status: "degraded"`. Ingest does not need Ollama
 with the default MiniLM embeddings.
 
-### Using BgGPT
+### Default model and fallback
 
-BgGPT has no official Ollama tag. Import the GGUF and point the API at it:
+The default generator is BgGPT v1.0 9B (INSAIT, Gemma 2 based), served from the
+community Ollama build `s_emanuilov/BgGPT-v1.0:9b` (about 7.7 GB loaded). The build ships the Gemma 2
+chat template, so the API sends prompts the normal way and Ollama applies the
+template. It was chosen after the three-model comparison on eval-v0.1.
+
+On machines with less memory (for example 16 GB with other load), use the
+fallback `qwen2.5:7b` (about 4.9 GB loaded):
 
 ```bash
-# Modelfile containing: FROM ./BgGPT-7B-Instruct-v0.2.Q4_K_M.gguf
-ollama create bggpt-7b -f Modelfile
-OLLAMA_MODEL=bggpt-7b   # in .env
+ollama pull qwen2.5:7b
+OLLAMA_MODEL=qwen2.5:7b   # in .env
 ```
 
-When the model name contains `bggpt`, the API renders the Mistral
-`[INST] ... [/INST]` template itself and sends the prompt in raw mode, so the
-Modelfile does not need a `TEMPLATE`. System prompts stay identical across
-models.
+The legacy Mistral-based BgGPT v0.x (imported from GGUF, for example as
+`bggpt-7b`) still works: for model names containing `bggpt` without `v1.0` or
+`gemma`, the API renders the `[INST] ... [/INST]` template itself and sends the
+prompt in raw mode.
 
 ## Quick start (Docker Compose)
 
 ```bash
 docker compose up --build
-docker compose exec ollama ollama pull qwen2.5:7b
+docker compose exec ollama ollama pull s_emanuilov/BgGPT-v1.0:9b
 ```
 
 | Service | URL | Notes |
@@ -122,7 +128,7 @@ Settings come from environment variables or `.env` (see
 | `LOG_LEVEL` | `INFO` | Root log level |
 | `LOG_FORMAT` | `text` | `text` or `json` (one JSON object per line, includes `request_id`) |
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Ollama HTTP API |
-| `OLLAMA_MODEL` | `qwen2.5:7b` | Active generation model (must be pulled) |
+| `OLLAMA_MODEL` | `s_emanuilov/BgGPT-v1.0:9b` | Active generation model (must be pulled); fallback `qwen2.5:7b` on machines with less memory |
 | `OLLAMA_NUM_CTX` | `4096` | Context window passed as `options.num_ctx` |
 | `OLLAMA_TEMPERATURE` | `0.0` | Sampling temperature passed as `options.temperature` |
 | `OLLAMA_STUB_ON_UNAVAILABLE` | `true` | Stub answers when Ollama fails; `false` returns 503 `llm_unavailable` |
@@ -239,7 +245,8 @@ typecheck and build for the frontend.
 
 ## Notes for 16 GB RAM
 
-1. Run one 7B or 8B model at a time; Q4 weights take about 4.4 to 4.9 GB.
+1. Run one model at a time. The default BgGPT v1.0 9B takes about 7.7 GB when loaded;
+   if memory is tight, switch to the fallback `qwen2.5:7b` (about 4.9 GB).
 2. Keep `OLLAMA_NUM_CTX` moderate (4096 or 8192); the KV cache grows with it.
 3. Keep `EMBEDDING_DEVICE=cpu` and MiniLM (about 80 MB) next to the LLM.
 4. Close other heavy applications if Ollama starts swapping.

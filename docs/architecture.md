@@ -23,7 +23,7 @@
 
 Език на казусните материали: **български** (PDF/TXT). Английски документи по дела не се поддържат като целеви вход.
 
-Целева машина: около **16 GB RAM** (без допускане за висока VRAM). По подразбиране генеративният модел е `qwen2.5:7b` (`OLLAMA_MODEL`).
+Целева машина: около **16 GB RAM** (без допускане за висока VRAM). По подразбиране генеративният модел е `s_emanuilov/BgGPT-v1.0:9b` (BgGPT v1.0 9B, `OLLAMA_MODEL`); резервен модел за машини с по-малко памет е `qwen2.5:7b`.
 
 ---
 
@@ -82,7 +82,7 @@
 ### 2.5. Ollama (локален LLM)
 
 - Единственият runtime за генерация върху съдържанието на документите.
-- По подразбиране: `OLLAMA_MODEL=qwen2.5:7b`.
+- По подразбиране: `OLLAMA_MODEL=s_emanuilov/BgGPT-v1.0:9b`; резервен: `qwen2.5:7b`.
 - Извикване: `POST {OLLAMA_BASE_URL}/api/generate` (`stream: false`), с опционален `system` prompt.
 - При грешка / timeout / празен отговор и `OLLAMA_STUB_ON_UNAVAILABLE=true`: връщат се **структурирани stub** отговори (`stubbed: true`), за да остане API/UI използваеми.
 - Health: `GET /api/tags` за reachability и списък на инсталираните модели.
@@ -184,7 +184,7 @@
 | Променлива | Подразбиране | Значение |
 |------------|--------------|----------|
 | `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Базов URL на локалния Ollama HTTP API |
-| `OLLAMA_MODEL` | `qwen2.5:7b` | Активен генеративен модел (трябва да е `ollama pull`-нат) |
+| `OLLAMA_MODEL` | `s_emanuilov/BgGPT-v1.0:9b` | Активен генеративен модел (трябва да е `ollama pull`-нат); резервен `qwen2.5:7b` |
 | `OLLAMA_STUB_ON_UNAVAILABLE` | `true` | Stub при недостъпен Ollama / timeout / грешка |
 | `OLLAMA_HEALTH_TIMEOUT` | `3.0` | Timeout за `/api/tags` (секунди) |
 | `OLLAMA_GENERATE_TIMEOUT` | `120.0` | Timeout за `/api/generate` (7B на CPU може да е бавен) |

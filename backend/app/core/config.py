@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     log_format: Literal["text", "json"] = "text"
 
     ollama_base_url: str = "http://127.0.0.1:11434"
-    ollama_model: str = "qwen2.5:7b"
+    # Default: BgGPT v1.0 9B (community Ollama build, about 7.7 GB loaded).
+    # Fallback for low-memory machines: qwen2.5:7b (about 4.9 GB).
+    ollama_model: str = "s_emanuilov/BgGPT-v1.0:9b"
     ollama_stub_on_unavailable: bool = True
     ollama_health_timeout: float = 3.0
     ollama_generate_timeout: float = 120.0

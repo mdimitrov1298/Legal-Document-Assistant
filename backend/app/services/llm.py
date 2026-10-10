@@ -1,7 +1,8 @@
 """Ollama LLM client: real local generate with graceful stub fallback.
 
 Primary path: POST {OLLAMA_BASE_URL}/api/generate with model from OLLAMA_MODEL
-(default qwen2.5:7b) and options num_ctx / temperature from settings. On connect
+(default s_emanuilov/BgGPT-v1.0:9b, fallback qwen2.5:7b) and options
+num_ctx / temperature from settings. On connect
 errors, timeouts, HTTP errors or empty responses it falls back to deterministic
 stubs when OLLAMA_STUB_ON_UNAVAILABLE=true, so summarize/verify still return
 structured API responses. With the fallback disabled it raises

@@ -32,7 +32,7 @@ Conventions:
 - **Description**: Active generation model and the models installed in the local Ollama
 - **Response**: `{ "active": "string", "reachable": bool, "installed": ["string"] }` (200 OK)
 - **Errors**: `internal_error` (500)
-- **Notes**: `active` is the value of `OLLAMA_MODEL` (for example `qwen2.5:7b`, `bggpt-7b` or `llama3.1:8b`). `installed` is empty when Ollama is unreachable
+- **Notes**: `active` is the value of `OLLAMA_MODEL` (default `s_emanuilov/BgGPT-v1.0:9b`; for example also `qwen2.5:7b` or `llama3.1:8b`). `installed` is empty when Ollama is unreachable
 - **Auth Required**: No (local single-user prototype)
 
 ---
