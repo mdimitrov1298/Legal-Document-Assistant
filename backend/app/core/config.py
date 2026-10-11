@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     ollama_num_ctx: int = Field(4096, ge=512)
     ollama_temperature: float = Field(0.0, ge=0.0, le=2.0)
 
+    # Language-based model routing (off by default).
+    model_routing: str = Field("off", pattern=r"^(off|language)$")
+    ollama_model_bg: str = "s_emanuilov/BgGPT-v1.0:9b"
+    ollama_model_en: str = "qwen2.5:7b"
+
     # Embedding backend: sentence-transformers | ollama | hash_stub.
     # The default MiniLM runs on CPU and works offline once downloaded, so
     # ingest does not need Ollama.

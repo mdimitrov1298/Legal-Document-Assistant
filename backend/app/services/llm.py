@@ -242,6 +242,20 @@ def get_llm() -> OllamaClient:
     return _client
 
 
+def get_llm_for_model(model: str) -> OllamaClient:
+    """Return an OllamaClient configured for a specific model tag.
+
+    Re-uses the default client when the model matches, otherwise creates a
+    temporary client that shares the same transport/settings but overrides
+    the model name.
+    """
+    default = get_llm()
+    if default.model == model:
+        return default
+    settings = default.settings.model_copy(update={"ollama_model": model})
+    return OllamaClient(settings, transport=default._transport)
+
+
 def reset_llm(client: OllamaClient | None = None) -> None:
     """Replace or clear the process-wide LLM singleton (for tests)."""
     global _client

@@ -34,7 +34,11 @@ eval-en-v0.1/
 
 P1, P2 and P4 are **project-original English translations** of the synthetic
 Bulgarian demo texts from `eval-v0.1`. The same facts and structure are
-preserved so results on the two packages are directly comparable.
+preserved so results on the two packages are directly comparable. Their
+manifest entries carry `"translation_of": "eval-v0.1/P<n>"` and
+`"original_language": "bg"` to make the provenance explicit. Original
+English documents are tested at case level in `eval-cases-v0.1` (cases
+K3 and K4).
 
 P3 is the English version of the same EU regulation (CELEX 31998R2866) used
 as P3 in the Bulgarian package, sourced from the EUR-Lex-Sum English split.

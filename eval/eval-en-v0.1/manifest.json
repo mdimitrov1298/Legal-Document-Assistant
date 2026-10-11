@@ -28,6 +28,8 @@
             "retrieved_at": "2026-10-10",
             "file_hash": "sha256:2ac21e234999c9a05c3b6662dc219549e3cb6c1b2e06af1692f93d02d083dd06",
             "token_count_approx": 275,
+            "translation_of": "eval-v0.1/P1",
+            "original_language": "bg",
             "tasks": [
                 "summarize",
                 "verify"
@@ -52,6 +54,8 @@
             "retrieved_at": "2026-10-10",
             "file_hash": "sha256:a6ec51dcda5f2facba8f169182af922e51277aafb1b2815c2f474c81f667ae52",
             "token_count_approx": 270,
+            "translation_of": "eval-v0.1/P2",
+            "original_language": "bg",
             "tasks": [
                 "summarize",
                 "verify"
@@ -99,6 +103,8 @@
             "retrieved_at": "2026-10-10",
             "file_hash": "sha256:64b1d0babc74f9bb07502c543221e0648e1504933ba0284156f9d0e99709a070",
             "token_count_approx": 223,
+            "translation_of": "eval-v0.1/P4",
+            "original_language": "bg",
             "tasks": [
                 "summarize",
                 "verify"

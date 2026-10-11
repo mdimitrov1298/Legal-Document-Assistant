@@ -24,7 +24,7 @@ from app.services.citations import citation_from_hit, citations_from_model
 from app.services.embeddings import get_embedder, get_embedding_backend
 from app.services.extraction import extract_text
 from app.services.language import Language, detect_language, majority_language
-from app.services.llm import get_llm
+from app.services.llm import OllamaClient, get_llm, get_llm_for_model
 from app.services.storage import STATUS_INGESTED, STATUS_STALE, get_store
 from app.services.vector_store import get_vectorstore
 
@@ -55,6 +55,30 @@ def _resolve_language(
     if resolved == "other":
         return "bg", True
     return resolved, False
+
+
+def _routed_llm(
+    lang: Language,
+) -> tuple[OllamaClient, bool]:
+    """Return the LLM client to use and whether routing was applied.
+
+    When ``MODEL_ROUTING=language``, the model is chosen by *lang*:
+    ``bg`` → ``OLLAMA_MODEL_BG``, ``en`` → ``OLLAMA_MODEL_EN``,
+    anything else → the default ``OLLAMA_MODEL``.
+    When routing is ``off``, the default client is returned.
+    """
+    settings = get_settings()
+    if settings.model_routing != "language":
+        return get_llm(), False
+
+    if lang == "bg":
+        target = settings.ollama_model_bg
+    elif lang == "en":
+        target = settings.ollama_model_en
+    else:
+        return get_llm(), True  # fallback to default, still routed
+
+    return get_llm_for_model(target), True
 
 
 def _elapsed_ms(started: float) -> float:
@@ -192,7 +216,6 @@ async def summarize_case(
     top_k = top_k or get_settings().summarize_top_k
     case = _require_queryable_case(case_id)
     vs = get_vectorstore()
-    llm = get_llm()
 
     retrieval_started = time.perf_counter()
     hits = vs.query(case_id, case.get("title") or SUMMARY_FALLBACK_QUERY, top_k=top_k)
@@ -201,6 +224,7 @@ async def summarize_case(
     retrieval_ms = _elapsed_ms(retrieval_started)
 
     lang, lang_is_other = _resolve_language(hits, answer_language)
+    llm, routed = _routed_llm(lang)
     system_prompt = prompts.get_summarize_system(lang)
     prompt = prompts.build_summarize_prompt(case.get("title"), hits, language=lang)
     generation_started = time.perf_counter()
@@ -234,6 +258,7 @@ async def summarize_case(
         citations=citations,
         model=llm.model_name,
         stubbed=stubbed,
+        routed=routed,
         chunks_used=len(hits),
         duration_ms=_elapsed_ms(started),
         retrieval_ms=retrieval_ms,
@@ -254,7 +279,6 @@ async def verify_claim(
     top_k = top_k or get_settings().verify_top_k
     _require_queryable_case(case_id)
     vs = get_vectorstore()
-    llm = get_llm()
 
     retrieval_started = time.perf_counter()
     hits = vs.query(case_id, claim, top_k=top_k)
@@ -262,6 +286,7 @@ async def verify_claim(
     retrieval_ms = _elapsed_ms(retrieval_started)
 
     lang, lang_is_other = _resolve_language(hits, answer_language)
+    llm, routed = _routed_llm(lang)
     system_prompt = prompts.get_verify_system(lang)
     prompt = prompts.build_verify_prompt(claim, hits, language=lang)
     generation_started = time.perf_counter()
@@ -314,6 +339,7 @@ async def verify_claim(
         retrieved_quotes=retrieved,
         model=llm.model_name,
         stubbed=stubbed,
+        routed=routed,
         duration_ms=_elapsed_ms(started),
         retrieval_ms=retrieval_ms,
         generation_ms=generation_ms,
@@ -333,7 +359,6 @@ async def ask_question(
     started = time.perf_counter()
     _require_queryable_case(case_id)
     vs = get_vectorstore()
-    llm = get_llm()
 
     retrieval_started = time.perf_counter()
     hits = vs.query(case_id, question, top_k=top_k)
@@ -341,6 +366,7 @@ async def ask_question(
     retrieval_ms = _elapsed_ms(retrieval_started)
 
     lang, lang_is_other = _resolve_language(hits, answer_language)
+    llm, routed = _routed_llm(lang)
     system_prompt = prompts.get_ask_system(lang)
     prompt = prompts.build_ask_prompt(question, hits, language=lang)
     generation_started = time.perf_counter()
