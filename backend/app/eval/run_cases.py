@@ -264,6 +264,7 @@ async def run_case_evaluation(
                     "bg": get_prompt_version("bg"),
                     "en": get_prompt_version("en"),
                 },
+                "model_routing": settings.model_routing,
                 "stub_on_unavailable": client.stub_on_unavailable,
                 "repeats": config.repeats,
                 "cases": [c.case_id for c in package.cases],
@@ -311,6 +312,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--embedding-model")
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--no-stub", action="store_true")
+    parser.add_argument(
+        "--routing",
+        choices=["off", "language"],
+        default=None,
+        help="Model routing mode (default: off)",
+    )
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--keep-work-dir", action="store_true")
     return parser
@@ -332,6 +339,7 @@ def main(argv: list[str] | None = None) -> int:
         allow_stub=not args.no_stub,
         work_dir=args.work_dir,
         keep_work_dir=args.keep_work_dir,
+        routing=args.routing,
     )
     out_path = asyncio.run(run_case_evaluation(config))
     print(out_path)
