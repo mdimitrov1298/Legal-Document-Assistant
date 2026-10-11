@@ -12,6 +12,7 @@ from typing import Any
 from app.core.config import get_settings
 from app.core.errors import CaseNotIngestedError, IngestFailedError, NoDocumentsError
 from app.schemas.rag import (
+    AskResponse,
     IngestResponse,
     SummarizeResponse,
     Verdict,
@@ -319,4 +320,69 @@ async def verify_claim(
         answer_language=lang,
         prompt_version=prompts.get_prompt_version(lang),
         language_warning=LANGUAGE_OTHER_WARNING if lang_is_other else None,
+    )
+
+
+async def ask_question(
+    case_id: str,
+    question: str,
+    top_k: int = 5,
+    answer_language: str = "auto",
+) -> AskResponse:
+    """Answer a free-form question using retrieved case chunks."""
+    started = time.perf_counter()
+    _require_queryable_case(case_id)
+    vs = get_vectorstore()
+    llm = get_llm()
+
+    retrieval_started = time.perf_counter()
+    hits = vs.query(case_id, question, top_k=top_k)
+    retrieved = [citation_from_hit(h) for h in hits]
+    retrieval_ms = _elapsed_ms(retrieval_started)
+
+    lang, lang_is_other = _resolve_language(hits, answer_language)
+    system_prompt = prompts.get_ask_system(lang)
+    prompt = prompts.build_ask_prompt(question, hits, language=lang)
+    generation_started = time.perf_counter()
+    raw, stubbed = await llm.generate(prompt, system=system_prompt)
+    generation_ms = _elapsed_ms(generation_started)
+    parsed = _parse_json_object(raw)
+
+    answer_text = str(parsed.get("answer", "")).strip()
+    status = str(parsed.get("status", "not_found")).strip().lower()
+    if status not in ("answered", "not_found"):
+        status = "answered" if answer_text else "not_found"
+
+    if not answer_text:
+        if stubbed and hits:
+            answer_text = (
+                "[STUB] Ollama unreachable. Top retrieved quote(s): "
+                + "; ".join(h["text"][:120] for h in hits[:3])
+            )
+            status = "not_found"
+        elif not answer_text:
+            answer_text = raw.strip() or "No answer could be generated."
+            if not parsed:
+                status = "not_found"
+
+    citations = citations_from_model(
+        hits, parsed.get("evidence"), parsed.get("citation_indices")
+    )
+    if not citations and hits and status == "answered":
+        citations = [citation_from_hit(hits[0])]
+
+    return AskResponse(
+        question=question,
+        answer=answer_text,
+        answer_status=status,
+        citations=citations,
+        retrieved_quotes=retrieved,
+        model=llm.model_name,
+        stubbed=stubbed,
+        answer_language=lang,
+        prompt_version=prompts.get_prompt_version(lang),
+        language_warning=LANGUAGE_OTHER_WARNING if lang_is_other else None,
+        retrieval_ms=retrieval_ms,
+        generation_ms=generation_ms,
+        duration_ms=_elapsed_ms(started),
     )

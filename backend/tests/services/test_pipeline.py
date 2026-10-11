@@ -196,6 +196,60 @@ async def test_bg_language_no_warning(rag_env, install_llm):
     assert result.language_warning is None
 
 
+# ---------------------------------------------------------------------------
+# ask_question tests
+# ---------------------------------------------------------------------------
+
+
+async def test_ask_returns_answer_with_citation(rag_env, install_llm):
+    install_llm(
+        _respond(
+            {
+                "answer": "Възнаграждението е 4500 лв.",
+                "status": "answered",
+                "evidence": [{"index": 1, "quote": "4500 лв."}],
+            }
+        )
+    )
+    result = await pipeline.ask_question("case-1", "Какво е възнаграждението?")
+    assert result.stubbed is False
+    assert result.answer_status == "answered"
+    assert "4500" in result.answer
+    assert len(result.citations) >= 1
+    assert result.model == "qwen2.5:7b"
+
+
+async def test_ask_not_found(rag_env, install_llm):
+    install_llm(
+        _respond(
+            {
+                "answer": "Не е намерена информация в документите.",
+                "status": "not_found",
+                "evidence": [],
+            }
+        )
+    )
+    result = await pipeline.ask_question("case-1", "Колко е данъкът?")
+    assert result.answer_status == "not_found"
+    assert result.citations == []
+
+
+async def test_ask_stub(rag_env, install_llm):
+    install_llm(_down)
+    result = await pipeline.ask_question("case-1", "Какъв е срокът?")
+    assert result.stubbed is True
+    assert result.answer_status == "not_found"
+    assert len(result.retrieved_quotes) == 2
+
+
+async def test_ask_prompt_selection_bg(rag_env, install_llm):
+    """BG chunks get Bulgarian ask prompt."""
+    install_llm(_down)
+    result = await pipeline.ask_question("case-1", "Какъв е срокът?")
+    assert result.answer_language == "bg"
+    assert result.prompt_version == "bg-v1"
+
+
 def test_parse_json_object_handles_markdown_code_block():
     from app.services.pipeline import _parse_json_object
 

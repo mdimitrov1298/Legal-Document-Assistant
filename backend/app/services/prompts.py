@@ -45,6 +45,28 @@ VERIFY_SYSTEM = (
     "където index е номерът на ЦИТАТА, а quote е откъс, копиран дословно от него."
 )
 
+ASK_SYSTEM = (
+    "Отговаряш на въпроси за факти по дело, като използваш САМО дадените "
+    "номерирани откъси. Не добавяй факти, имена, дати или суми, които не "
+    "присъстват в откъсите. Ако откъсите не съдържат отговор, върни status "
+    '"not_found". Не давай правни съвети, изводи или тълкувания. '
+    'Отговори само с JSON: {"answer": "...", "status": "answered"|"not_found", '
+    '"evidence": [{"index": int, "quote": "..."}]}, '
+    "където index е номерът на откъса, а quote е откъс, копиран дословно от него."
+)
+
+ASK_SYSTEM_EN = (
+    "You are answering factual questions about a case using ONLY the given "
+    "numbered excerpts. Do not add facts, names, dates or amounts that are "
+    "not present in the excerpts. If the excerpts do not contain an answer, "
+    'return status "not_found". Do not give legal advice, conclusions or '
+    "interpretations. "
+    'Reply with JSON only: {"answer": "...", "status": "answered"|"not_found", '
+    '"evidence": [{"index": int, "quote": "..."}]}, '
+    "where index is the number of the excerpt and quote is a passage copied "
+    "verbatim from it."
+)
+
 NO_EXCERPTS = "(Няма индексирани откъси.)"
 
 # ---------------------------------------------------------------------------
@@ -75,6 +97,11 @@ VERIFY_SYSTEM_EN = (
 )
 
 NO_EXCERPTS_EN = "(No indexed excerpts.)"
+
+
+def get_ask_system(language: str = "bg") -> str:
+    """Return the ask system prompt for the given language."""
+    return ASK_SYSTEM_EN if language == "en" else ASK_SYSTEM
 
 
 def get_summarize_system(language: str = "bg") -> str:
@@ -125,6 +152,21 @@ def build_summarize_prompt(
         f"ОТКЪСИ:\n{format_excerpts(hits)}\n\n"
         "JSON:"
     )
+
+
+def build_ask_prompt(
+    question: str,
+    hits: list[dict[str, Any]],
+    *,
+    language: str = "bg",
+) -> str:
+    if language == "en":
+        return (
+            f"QUESTION:\n{question}\n\n"
+            f"EXCERPTS:\n{format_excerpts(hits, language='en')}\n\n"
+            "JSON:"
+        )
+    return f"ВЪПРОС:\n{question}\n\nОТКЪСИ:\n{format_excerpts(hits)}\n\nJSON:"
 
 
 def build_verify_prompt(

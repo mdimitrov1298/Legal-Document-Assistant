@@ -123,6 +123,36 @@ class Verdict(StrEnum):
     inconclusive = "inconclusive"
 
 
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=2000)
+    top_k: int = Field(5, ge=1, le=20)
+    answer_language: str = Field(
+        "auto",
+        pattern=r"^(auto|bg|en)$",
+        description="Language for the answer: auto (from chunks), bg or en",
+    )
+
+
+class AskResponse(BaseModel):
+    question: str
+    answer: str
+    answer_status: str = Field(
+        ...,
+        pattern=r"^(answered|not_found)$",
+        description="Whether the question was answered or not found in documents",
+    )
+    citations: list[Citation] = Field(default_factory=list)
+    retrieved_quotes: list[Citation] = Field(default_factory=list)
+    model: str
+    stubbed: bool = False
+    answer_language: str = "bg"
+    prompt_version: str = ""
+    language_warning: str | None = None
+    retrieval_ms: float = 0.0
+    generation_ms: float = 0.0
+    duration_ms: float = 0.0
+
+
 class VerifyResponse(BaseModel):
     case_id: str
     claim: str

@@ -119,3 +119,38 @@ def test_en_prompt_uses_same_verdict_labels():
     """English prompts use the same verdict labels as Bulgarian."""
     for label in ("supported", "denied", "inconclusive"):
         assert label in prompts.VERIFY_SYSTEM_EN
+
+
+# --- Ask prompt tests ---
+
+
+def test_ask_system_bg_requests_json():
+    assert "JSON" in prompts.ASK_SYSTEM
+    assert "not_found" in prompts.ASK_SYSTEM
+    assert "evidence" in prompts.ASK_SYSTEM
+
+
+def test_ask_system_en_requests_json():
+    assert "JSON" in prompts.ASK_SYSTEM_EN
+    assert "not_found" in prompts.ASK_SYSTEM_EN
+    assert "evidence" in prompts.ASK_SYSTEM_EN
+
+
+def test_get_ask_system_bg():
+    assert prompts.get_ask_system("bg") == prompts.ASK_SYSTEM
+
+
+def test_get_ask_system_en():
+    assert prompts.get_ask_system("en") == prompts.ASK_SYSTEM_EN
+
+
+def test_build_ask_prompt_bg():
+    text = prompts.build_ask_prompt("Какъв е срокът?", HITS)
+    assert "ВЪПРОС:\nКакъв е срокът?" in text
+    assert "ОТКЪСИ:" in text
+
+
+def test_build_ask_prompt_en():
+    text = prompts.build_ask_prompt("What is the deadline?", HITS_EN, language="en")
+    assert "QUESTION:\nWhat is the deadline?" in text
+    assert "EXCERPTS:" in text

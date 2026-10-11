@@ -207,6 +207,24 @@ Conventions:
 
 ---
 
+## Ask Endpoint
+
+### POST /api/v1/cases/{case_id}/ask
+
+- **Description**: Answer a free-form question about the case documents with citations. The model answers only from retrieved excerpts; it refuses legal advice or interpretation
+- **Path Parameters**: `case_id` (UUID)
+- **Request Body**: `AskRequest { "question": "string" (3..2000 chars), "top_k": int (1..20, default 5), "answer_language": "auto" | "bg" | "en" (default "auto") }`
+- **Response**: `AskResponse { question, answer, answer_status: "answered" | "not_found", citations: Citation[], retrieved_quotes: Citation[], model, stubbed, answer_language, prompt_version, language_warning, retrieval_ms, generation_ms, duration_ms }` (200 OK)
+- **Errors**: `case_not_found` (404), `case_not_ingested` (409), `validation_error` (422), `llm_unavailable` (503)
+- **Notes**:
+    - `answer_status` is `"answered"` when the model found relevant information, or `"not_found"` when the question cannot be answered from the documents
+    - `citations` carry `verbatim` flags as in verify; `retrieved_quotes` lists all chunks used as context
+    - `stubbed = true` means Ollama was not used and the answer is a placeholder
+    - The output is not legal advice (condition 3)
+- **Auth Required**: No (local single-user prototype)
+
+---
+
 ## Health Check
 
 ### GET /health
@@ -330,6 +348,32 @@ embedding_model:    string | null
 ingested_at:        datetime | null
 ```
 
+### AskRequest
+
+```text
+question:         string   (required, 3..2000 chars)
+top_k:            int      (optional, 1..20, default 5)
+answer_language:  "auto" | "bg" | "en"   (default "auto")
+```
+
+### AskResponse
+
+```text
+question:          string
+answer:            string
+answer_status:     "answered" | "not_found"
+citations:         Citation[]
+retrieved_quotes:  Citation[]
+model:             string
+stubbed:           bool
+answer_language:   string
+prompt_version:    string
+language_warning:  string | null
+retrieval_ms:      float
+generation_ms:     float
+duration_ms:       float
+```
+
 ### SearchRequest
 
 ```text
@@ -376,13 +420,18 @@ top_k:  int | null   (optional, 1..20; null or omitted uses SUMMARIZE_TOP_K = 8)
 ### SummarizeResponse
 
 ```text
-case_id:      string (UUID)
-summary:      string   (Bulgarian)
-citations:    Citation[]
-model:        string   (Ollama tag used, e.g. "qwen2.5:7b")
-stubbed:      bool
-chunks_used:  int
-duration_ms:  float
+case_id:           string (UUID)
+summary:           string
+citations:         Citation[]
+model:             string   (Ollama tag used, e.g. "qwen2.5:7b")
+stubbed:           bool
+chunks_used:       int
+duration_ms:       float
+retrieval_ms:      float
+generation_ms:     float
+answer_language:   string   ("bg" or "en")
+prompt_version:    string   (e.g. "bg-v1" or "en-v1")
+language_warning:  string | null   (set when documents are in an unsupported language)
 ```
 
 ### VerifyRequest
@@ -405,6 +454,11 @@ retrieved_quotes:   Citation[]
 model:              string
 stubbed:            bool
 duration_ms:        float
+retrieval_ms:       float
+generation_ms:      float
+answer_language:    string   ("bg" or "en")
+prompt_version:     string   (e.g. "bg-v1" or "en-v1")
+language_warning:   string | null   (set when documents are in an unsupported language)
 ```
 
 ### Citation

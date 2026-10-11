@@ -220,6 +220,47 @@ def test_search_unknown_case_is_404(client):
     assert r.json()["error"]["code"] == "case_not_found"
 
 
+def test_ask_stubbed(client):
+    case_id = create_case(client)
+    upload(client, case_id)
+    ingest(client, case_id)
+    r = client.post(
+        f"{API}/cases/{case_id}/ask",
+        json={"question": "Какво е възнаграждението?"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["stubbed"] is True
+    assert body["answer_status"] in ("answered", "not_found")
+    assert body["question"] == "Какво е възнаграждението?"
+    assert body["retrieved_quotes"]
+
+
+def test_ask_not_ingested_is_409(client):
+    case_id = create_case(client)
+    upload(client, case_id)
+    r = client.post(
+        f"{API}/cases/{case_id}/ask",
+        json={"question": "Какво е възнаграждението?"},
+    )
+    assert r.status_code == 409
+    assert r.json()["error"]["code"] == "case_not_ingested"
+
+
+def test_ask_unknown_case_is_404(client):
+    r = client.post(
+        f"{API}/cases/nope/ask",
+        json={"question": "Какво е възнаграждението?"},
+    )
+    assert r.status_code == 404
+
+
+def test_ask_short_question_is_422(client):
+    case_id = create_case(client)
+    r = client.post(f"{API}/cases/{case_id}/ask", json={"question": "ab"})
+    assert r.status_code == 422
+
+
 def test_old_flat_routes_are_gone(client):
     assert client.get("/api/health").status_code == 404
     assert client.post("/api/cases", json={"title": "x"}).status_code == 404

@@ -208,6 +208,23 @@ class OllamaClient:
                     "denying_quote_indices": [],
                 }
             )
+        if (
+            "въпрос" in lower
+            or "question" in lower
+            or '"status"' in lower
+            or "evidence" in lower
+        ):
+            return json.dumps(
+                {
+                    "answer": (
+                        "[STUB] Ollama unreachable. Cannot answer question. "
+                        f"Run `ollama serve` and `ollama pull {self.model}`, "
+                        "then retry."
+                    ),
+                    "status": "not_found",
+                    "evidence": [],
+                }
+            )
         return (
             "[STUB SUMMARY] Ollama is unreachable. This is a placeholder summary. "
             f"Run `ollama serve` and `ollama pull {self.model}`, then retry. "

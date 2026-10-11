@@ -7,6 +7,8 @@ from fastapi import APIRouter
 from app.core.errors import AppError, IngestFailedError
 from app.schemas.common import error_responses
 from app.schemas.rag import (
+    AskRequest,
+    AskResponse,
     IndexStatsResponse,
     IngestResponse,
     SearchRequest,
@@ -86,3 +88,18 @@ async def verify_claim(case_id: str, body: VerifyRequest) -> VerifyResponse:
 async def search(case_id: str, body: SearchRequest) -> SearchResponse:
     """Interactive search over indexed case documents. No LLM call required."""
     return search_case(case_id, body.query, top_k=body.top_k, mode=body.mode)
+
+
+@router.post(
+    "/ask",
+    response_model=AskResponse,
+    responses=error_responses(404, 409, 422, 503),
+)
+async def ask(case_id: str, body: AskRequest) -> AskResponse:
+    """Answer a free-form question about the case documents with citations."""
+    return await pipeline.ask_question(
+        case_id,
+        body.question,
+        top_k=body.top_k,
+        answer_language=body.answer_language,
+    )
