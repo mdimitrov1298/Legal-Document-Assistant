@@ -16,6 +16,7 @@ from app.schemas.system import (
     ModelsResponse,
     OllamaStatus,
     RootResponse,
+    RoutingStatus,
     VectorStoreStatus,
 )
 from app.services.embeddings import get_embedder, get_embedding_backend
@@ -78,9 +79,18 @@ async def get_health() -> HealthResponse:
 
 @router.get("/models", response_model=ModelsResponse)
 async def list_models() -> ModelsResponse:
-    """Active OLLAMA_MODEL and the models installed in the local Ollama."""
+    """Active OLLAMA_MODEL, installed models and model routing state."""
+    settings = get_settings()
     llm = get_llm()
     reachable, installed = await llm.probe()
+    routing = RoutingStatus(
+        mode=settings.model_routing,
+        model_bg=settings.ollama_model_bg,
+        model_en=settings.ollama_model_en,
+    )
     return ModelsResponse(
-        active=llm.model_name, reachable=reachable, installed=installed
+        active=llm.model_name,
+        reachable=reachable,
+        installed=installed,
+        routing=routing,
     )

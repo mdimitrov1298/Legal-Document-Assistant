@@ -67,19 +67,18 @@ def test_health_degraded_when_ollama_down(client):
 
 def test_models(client, install_llm):
     install_llm(_tags("qwen2.5:7b", "bggpt-7b:latest"))
-    assert client.get("/api/v1/models").json() == {
-        "active": "qwen2.5:7b",
-        "reachable": True,
-        "installed": ["qwen2.5:7b", "bggpt-7b:latest"],
-    }
+    data = client.get("/api/v1/models").json()
+    assert data["active"] == "qwen2.5:7b"
+    assert data["reachable"] is True
+    assert data["installed"] == ["qwen2.5:7b", "bggpt-7b:latest"]
+    assert data["routing"]["mode"] == "off"
 
 
 def test_models_when_down(client):
-    assert client.get("/api/v1/models").json() == {
-        "active": "qwen2.5:7b",
-        "reachable": False,
-        "installed": [],
-    }
+    data = client.get("/api/v1/models").json()
+    assert data["active"] == "qwen2.5:7b"
+    assert data["reachable"] is False
+    assert data["installed"] == []
 
 
 def test_operation_ids_use_route_names(client):

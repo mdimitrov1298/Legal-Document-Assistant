@@ -55,10 +55,17 @@ export interface HealthResponse {
   chunking: { size: number; overlap: number }
 }
 
+export interface RoutingStatus {
+  mode: string
+  model_bg: string
+  model_en: string
+}
+
 export interface ModelsResponse {
   active: string
   reachable: boolean
   installed: string[]
+  routing: RoutingStatus
 }
 
 // cases
@@ -152,6 +159,7 @@ export interface SummarizeResponse {
   citations: Citation[]
   model: string
   stubbed: boolean
+  routed: boolean
   chunks_used: number
   duration_ms: number
   answer_language?: string
@@ -208,6 +216,7 @@ export interface AskResponse {
   retrieved_quotes: Citation[]
   model: string
   stubbed: boolean
+  routed: boolean
   answer_language: string
   prompt_version: string
   language_warning: string | null
@@ -236,6 +245,7 @@ export interface VerifyResponse {
   retrieved_quotes: Citation[]
   model: string
   stubbed: boolean
+  routed: boolean
   duration_ms: number
   answer_language?: string
 }

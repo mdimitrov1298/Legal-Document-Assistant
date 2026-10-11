@@ -54,7 +54,14 @@ class HealthResponse(BaseModel):
     chunking: ChunkingStatus
 
 
+class RoutingStatus(BaseModel):
+    mode: str = Field("off", description="Model routing mode: off or language")
+    model_bg: str = Field("", description="Model for BG when routing=language")
+    model_en: str = Field("", description="Model for EN when routing=language")
+
+
 class ModelsResponse(BaseModel):
     active: str
     reachable: bool
     installed: list[str] = Field(default_factory=list)
+    routing: RoutingStatus = Field(default_factory=RoutingStatus)

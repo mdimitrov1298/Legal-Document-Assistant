@@ -1,0 +1,2 @@
+run_file,model,repeat,passage_id,sentence_id,sentence,cited_chunk_text,faithful,error_type,comment
+example_run,qwen2.5:7b,1,P1,s1,Example summary sentence.,Example cited chunk text.,,none,

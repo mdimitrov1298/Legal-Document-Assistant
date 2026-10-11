@@ -64,6 +64,7 @@ class RunConfig:
     allow_stub: bool = True
     work_dir: Path | None = None
     keep_work_dir: bool = False
+    routing: str | None = None  # "language" or None (off)
 
 
 def _now() -> str:
@@ -134,6 +135,7 @@ def _env_overrides(config: RunConfig, work_dir: Path) -> dict[str, str]:
         "SUMMARIZE_TOP_K": config.summary_top_k,
         "EMBEDDING_BACKEND": config.embedding_backend,
         "EMBEDDING_MODEL": config.embedding_model,
+        "MODEL_ROUTING": config.routing,
     }
     env.update({k: str(v) for k, v in optional.items() if v is not None})
     return env
@@ -214,6 +216,7 @@ async def _run_passage(
                 "generation_ms": summary.generation_ms,
                 "model": summary.model,
                 "stubbed": summary.stubbed,
+                "routed": summary.routed,
                 "answer_language": summary.answer_language,
                 "prompt_version": summary.prompt_version,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 1),
@@ -256,6 +259,7 @@ async def _run_passage(
                 "generation_ms": result.generation_ms,
                 "model": result.model,
                 "stubbed": result.stubbed,
+                "routed": result.routed,
                 "answer_language": result.answer_language,
                 "prompt_version": result.prompt_version,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 1),
@@ -309,6 +313,9 @@ async def run_evaluation(config: RunConfig, *, llm: OllamaClient | None = None) 
                     "bg": get_prompt_version("bg"),
                     "en": get_prompt_version("en"),
                 },
+                "model_routing": settings.model_routing,
+                "model_bg": settings.ollama_model_bg,
+                "model_en": settings.ollama_model_en,
                 "stub_on_unavailable": client.stub_on_unavailable,
                 "repeats": config.repeats,
                 "python": sys.version.split()[0],
@@ -362,6 +369,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Fail calls instead of stubbing when Ollama is unavailable",
     )
+    parser.add_argument(
+        "--routing",
+        choices=["off", "language"],
+        default=None,
+        help="Model routing mode (default: off)",
+    )
     parser.add_argument("--work-dir", type=Path)
     parser.add_argument("--keep-work-dir", action="store_true")
     return parser
@@ -381,6 +394,7 @@ def main(argv: list[str] | None = None) -> int:
         embedding_model=args.embedding_model,
         repeats=max(1, args.repeats),
         allow_stub=not args.no_stub,
+        routing=args.routing if args.routing and args.routing != "off" else None,
         work_dir=args.work_dir,
         keep_work_dir=args.keep_work_dir,
     )

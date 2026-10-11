@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import type { ApiError } from '@/api/client'
-import type { HealthResponse } from '@/api/types'
+import type { HealthResponse, ModelsResponse } from '@/api/types'
+import { getModels } from '@/api/system'
 
 interface StatusPanelProps {
   health: HealthResponse | null
@@ -33,6 +35,14 @@ export function StatusPanel({ health, error, loading, onRefresh }: StatusPanelPr
 
 function HealthRows({ health }: { health: HealthResponse }) {
   const { ollama, embeddings, chunking } = health
+  const [models, setModels] = useState<ModelsResponse | null>(null)
+
+  useEffect(() => {
+    getModels().then(setModels).catch(() => {})
+  }, [health])
+
+  const routing = models?.routing
+
   return (
     <dl className="status-grid">
       <dt>API</dt>
@@ -63,6 +73,22 @@ function HealthRows({ health }: { health: HealthResponse }) {
           </span>
         )}
       </dd>
+
+      {routing && (
+        <>
+          <dt>Маршрутизация</dt>
+          <dd>
+            {routing.mode === 'language' ? (
+              <span className="ok">
+                по език (BG: <code>{routing.model_bg}</code>, EN:{' '}
+                <code>{routing.model_en}</code>)
+              </span>
+            ) : (
+              <span className="muted">изключена</span>
+            )}
+          </dd>
+        </>
+      )}
 
       <dt>Embeddings</dt>
       <dd>

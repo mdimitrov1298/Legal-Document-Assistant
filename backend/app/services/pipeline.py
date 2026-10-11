@@ -405,6 +405,7 @@ async def ask_question(
         retrieved_quotes=retrieved,
         model=llm.model_name,
         stubbed=stubbed,
+        routed=routed,
         answer_language=lang,
         prompt_version=prompts.get_prompt_version(lang),
         language_warning=LANGUAGE_OTHER_WARNING if lang_is_other else None,

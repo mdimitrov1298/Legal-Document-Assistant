@@ -96,6 +96,10 @@ class SummarizeResponse(BaseModel):
     citations: list[Citation] = Field(default_factory=list)
     model: str
     stubbed: bool = False
+    routed: bool = Field(
+        False,
+        description="True when language-based model routing selected this model",
+    )
     chunks_used: int = 0
     duration_ms: float = 0.0
     retrieval_ms: float = 0.0
@@ -145,6 +149,10 @@ class AskResponse(BaseModel):
     retrieved_quotes: list[Citation] = Field(default_factory=list)
     model: str
     stubbed: bool = False
+    routed: bool = Field(
+        False,
+        description="True when language-based model routing selected this model",
+    )
     answer_language: str = "bg"
     prompt_version: str = ""
     language_warning: str | None = None
@@ -166,6 +174,10 @@ class VerifyResponse(BaseModel):
     )
     model: str
     stubbed: bool = False
+    routed: bool = Field(
+        False,
+        description="True when language-based model routing selected this model",
+    )
     duration_ms: float = 0.0
     retrieval_ms: float = 0.0
     generation_ms: float = 0.0
