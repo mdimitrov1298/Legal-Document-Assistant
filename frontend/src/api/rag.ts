@@ -1,7 +1,11 @@
 import { request } from '@/api/client'
 import type {
+  AskRequest,
+  AskResponse,
   IndexStatsResponse,
   IngestResponse,
+  SearchRequest,
+  SearchResponse,
   SummarizeRequest,
   SummarizeResponse,
   VerifyRequest,
@@ -30,4 +34,12 @@ export function summarizeCase(
 
 export function verifyClaim(caseId: string, body: VerifyRequest): Promise<VerifyResponse> {
   return request<VerifyResponse>(`${casePath(caseId)}/verify`, { method: 'POST', json: body })
+}
+
+export function searchCase(caseId: string, body: SearchRequest): Promise<SearchResponse> {
+  return request<SearchResponse>(`${casePath(caseId)}/search`, { method: 'POST', json: body })
+}
+
+export function askCase(caseId: string, body: AskRequest): Promise<AskResponse> {
+  return request<AskResponse>(`${casePath(caseId)}/ask`, { method: 'POST', json: body })
 }

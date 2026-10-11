@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useId, type FormEvent, useState } from 'react'
 import type { AnswerLanguage, VerifyResponse } from '@/api/types'
 import { CitationList } from '@/components/CitationList'
 import { GenerationInfo } from '@/components/GenerationInfo'
@@ -16,10 +16,13 @@ interface VerifyPanelProps {
   /** Another action is running. */
   locked: boolean
   onVerify: (claim: string, answerLanguage: AnswerLanguage) => Promise<void>
+  /** Externally controlled claim text (e.g. from SearchPanel "use as claim"). */
+  claim: string
+  /** Notify parent when claim text changes. */
+  onClaimChange: (claim: string) => void
 }
 
-export function VerifyPanel({ result, ready, busy, locked, onVerify }: VerifyPanelProps) {
-  const [claim, setClaim] = useState('')
+export function VerifyPanel({ result, ready, busy, locked, onVerify, claim, onClaimChange }: VerifyPanelProps) {
   const [answerLang, setAnswerLang] = useState<AnswerLanguage>('auto')
   const claimId = useId()
   const trimmed = claim.trim()
@@ -42,7 +45,7 @@ export function VerifyPanel({ result, ready, busy, locked, onVerify }: VerifyPan
           rows={3}
           value={claim}
           maxLength={CLAIM_MAX}
-          onChange={(e) => setClaim(e.target.value)}
+          onChange={(e) => onClaimChange(e.target.value)}
           placeholder="Въведете фактическо твърдение за проверка по документите..."
           disabled={!ready}
         />

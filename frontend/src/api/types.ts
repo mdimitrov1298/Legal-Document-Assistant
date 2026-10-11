@@ -157,6 +157,67 @@ export interface SummarizeResponse {
   answer_language?: string
 }
 
+// search
+
+export type SearchMode = 'semantic' | 'keyword' | 'hybrid'
+
+export interface SearchHighlight {
+  start: number
+  end: number
+}
+
+export interface SearchResult {
+  document_id: string
+  document_filename: string
+  chunk_id: string
+  chunk_index: number | null
+  text: string
+  score: number
+  highlights: SearchHighlight[]
+  language: string
+}
+
+export interface SearchRequest {
+  query: string
+  top_k?: number
+  mode?: SearchMode
+}
+
+export interface SearchResponse {
+  query: string
+  results: SearchResult[]
+  duration_ms: number
+  mode: string
+}
+
+// ask
+
+export type AnswerStatus = 'answered' | 'not_found'
+
+export interface AskRequest {
+  question: string
+  top_k?: number
+  answer_language?: AnswerLanguage
+}
+
+export interface AskResponse {
+  question: string
+  answer: string
+  answer_status: AnswerStatus
+  citations: Citation[]
+  retrieved_quotes: Citation[]
+  model: string
+  stubbed: boolean
+  answer_language: string
+  prompt_version: string
+  language_warning: string | null
+  retrieval_ms: number
+  generation_ms: number
+  duration_ms: number
+}
+
+// verify
+
 export type Verdict = 'supported' | 'denied' | 'inconclusive'
 
 export interface VerifyRequest {

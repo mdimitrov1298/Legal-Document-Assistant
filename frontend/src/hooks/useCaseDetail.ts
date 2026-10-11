@@ -2,18 +2,21 @@ import { useCallback, useEffect, useState } from 'react'
 import { getCase } from '@/api/cases'
 import { isAbortError, toApiError, type ApiError } from '@/api/client'
 import { deleteDocument, listDocuments, uploadDocument } from '@/api/documents'
-import { getIndexStats, ingestCase, summarizeCase, verifyClaim } from '@/api/rag'
+import { askCase, getIndexStats, ingestCase, searchCase, summarizeCase, verifyClaim } from '@/api/rag'
 import type {
   AnswerLanguage,
+  AskResponse,
   CaseResponse,
   DocumentResponse,
   IndexStatsResponse,
   IngestResponse,
+  SearchMode,
+  SearchResponse,
   SummarizeResponse,
   VerifyResponse,
 } from '@/api/types'
 
-export type CaseAction = 'load' | 'upload' | 'deleteDocument' | 'ingest' | 'summarize' | 'verify'
+export type CaseAction = 'load' | 'upload' | 'deleteDocument' | 'ingest' | 'summarize' | 'verify' | 'search' | 'ask'
 
 interface Snapshot {
   caseData: CaseResponse
@@ -51,6 +54,8 @@ export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResp
   const [ingestResult, setIngestResult] = useState<IngestResponse | null>(null)
   const [summary, setSummary] = useState<SummarizeResponse | null>(null)
   const [verification, setVerification] = useState<VerifyResponse | null>(null)
+  const [searchResult, setSearchResult] = useState<SearchResponse | null>(null)
+  const [askResult, setAskResult] = useState<AskResponse | null>(null)
   const [busy, setBusy] = useState<CaseAction | null>('load')
   const [error, setError] = useState<ApiError | null>(null)
 
@@ -93,6 +98,8 @@ export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResp
     setIngestResult(null)
     setSummary(null)
     setVerification(null)
+    setSearchResult(null)
+    setAskResult(null)
   }, [])
 
   const upload = useCallback(
@@ -150,6 +157,26 @@ export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResp
     [caseId, run],
   )
 
+  const search = useCallback(
+    (query: string, mode: SearchMode = 'hybrid') =>
+      run('search', async () => {
+        setSearchResult(await searchCase(caseId, { query, mode }))
+      }),
+    [caseId, run],
+  )
+
+  const ask = useCallback(
+    (question: string, answerLanguage: AnswerLanguage = 'auto') =>
+      run('ask', async () => {
+        const body =
+          answerLanguage === 'auto'
+            ? { question }
+            : { question, answer_language: answerLanguage }
+        setAskResult(await askCase(caseId, body))
+      }),
+    [caseId, run],
+  )
+
   const clearError = useCallback(() => setError(null), [])
 
   return {
@@ -159,6 +186,8 @@ export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResp
     ingestResult,
     summary,
     verification,
+    searchResult,
+    askResult,
     busy,
     error,
     clearError,
@@ -167,5 +196,7 @@ export function useCaseDetail(caseId: string, onCaseChange?: (caseData: CaseResp
     ingest,
     summarize,
     verify,
+    search,
+    ask,
   }
 }

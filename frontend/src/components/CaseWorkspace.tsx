@@ -1,9 +1,12 @@
+import { useCallback, useState } from 'react'
 import type { CaseResponse } from '@/api/types'
+import { AskPanel } from '@/components/AskPanel'
 import { CaseStatusBadge } from '@/components/CaseStatusBadge'
 import { DocumentList } from '@/components/DocumentList'
 import { DocumentUpload } from '@/components/DocumentUpload'
 import { ErrorBanner } from '@/components/ErrorBanner'
 import { IngestPanel } from '@/components/IngestPanel'
+import { SearchPanel } from '@/components/SearchPanel'
 import { SummaryPanel } from '@/components/SummaryPanel'
 import { VerifyPanel } from '@/components/VerifyPanel'
 import { canQuery, useCaseDetail } from '@/hooks/useCaseDetail'
@@ -16,6 +19,11 @@ interface CaseWorkspaceProps {
 export function CaseWorkspace({ caseId, onCaseChange }: CaseWorkspaceProps) {
   const detail = useCaseDetail(caseId, onCaseChange)
   const { caseData, documents, busy } = detail
+  const [verifyClaim, setVerifyClaim] = useState('')
+
+  const handleUseAsClaim = useCallback((text: string) => {
+    setVerifyClaim(text)
+  }, [])
 
   if (!caseData) {
     return (
@@ -60,12 +68,29 @@ export function CaseWorkspace({ caseId, onCaseChange }: CaseWorkspaceProps) {
         locked={locked}
         onSummarize={detail.summarize}
       />
+      <SearchPanel
+        result={detail.searchResult}
+        ready={queryable}
+        busy={busy === 'search'}
+        locked={locked}
+        onSearch={detail.search}
+        onUseAsClaim={handleUseAsClaim}
+      />
+      <AskPanel
+        result={detail.askResult}
+        ready={queryable}
+        busy={busy === 'ask'}
+        locked={locked}
+        onAsk={detail.ask}
+      />
       <VerifyPanel
         result={detail.verification}
         ready={queryable}
         busy={busy === 'verify'}
         locked={locked}
         onVerify={detail.verify}
+        claim={verifyClaim}
+        onClaimChange={setVerifyClaim}
       />
     </div>
   )
