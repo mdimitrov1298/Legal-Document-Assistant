@@ -1,8 +1,9 @@
 {
     "name": "eval-cases-v0.1",
     "version": "0.1",
-    "status": "draft",
-    "frozen_at": null,
+    "status": "frozen",
+    "frozen_at": "2026-10-11T11:59:42Z",
+    "manifest_sha256": "b19f60a82cf4b1d53a4382100e0b39690a8cac8d93969ccb840160db1ca538e2",
     "description": "Case-level evaluation package for the Legal Document Assistant prototype. Each case contains multiple documents uploaded together and is tested end to end: create, upload, ingest, summarize, verify, ask, search. Two Bulgarian and two English cases covering synthetic and public (EUR-Lex) documents in TXT and PDF formats.",
     "hash_algorithm": "sha256",
     "cases": [

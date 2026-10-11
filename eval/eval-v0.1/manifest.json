@@ -1,10 +1,11 @@
 {
     "name": "eval-v0.1",
     "version": "0.1",
-    "status": "draft",
-    "frozen_at": null,
+    "status": "frozen",
+    "frozen_at": "2026-10-11T11:59:42Z",
+    "manifest_sha256": "1a03b07110915850d060cbcfdf63de3f03cfa0b491850c9b39713c56849fd217",
     "language": "bg",
-    "description": "Draft Bulgarian evaluation package for summarize and claim verification (S1 to S5). Passages P1, P2 and P4 are synthetic demo texts; P3 is a real EUR-Lex-Sum Bulgarian document (CELEX 31998R2866, Council Regulation (EC) No 2866/98, CC-BY-SA 4.0).",
+    "description": "Frozen Bulgarian evaluation package for summarize and claim verification (S1 to S5). Passages P1, P2 and P4 are synthetic demo texts; P3 is a real EUR-Lex-Sum Bulgarian document (CELEX 31998R2866, Council Regulation (EC) No 2866/98, CC-BY-SA 4.0).",
     "hash_algorithm": "sha256 over the raw UTF-8 bytes of the passage file",
     "token_count_method": "ceil(characters / 3), a rough estimate for Cyrillic text",
     "claims_file": "claims/claims.jsonl",
@@ -17,7 +18,7 @@
     "passages": [
         {
             "id": "P1",
-            "status": "draft",
+            "status": "frozen",
             "path": "passages/P1.txt",
             "language": "bg",
             "genre": "normative",
@@ -41,7 +42,7 @@
         },
         {
             "id": "P2",
-            "status": "draft",
+            "status": "frozen",
             "path": "passages/P2.txt",
             "language": "bg",
             "genre": "narrative",
@@ -65,7 +66,7 @@
         },
         {
             "id": "P3",
-            "status": "draft",
+            "status": "frozen",
             "path": "passages/P3.txt",
             "language": "bg",
             "genre": "EU regulatory",
@@ -88,7 +89,7 @@
         },
         {
             "id": "P4",
-            "status": "draft",
+            "status": "frozen",
             "path": "passages/P4.txt",
             "language": "bg",
             "genre": "narrative_second_document",

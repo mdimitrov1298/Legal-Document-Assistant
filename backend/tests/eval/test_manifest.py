@@ -23,7 +23,7 @@ def package_copy(tmp_path: Path) -> Path:
 def test_load_committed_package():
     package = load_package(PACKAGE)
     assert package.version == "0.1"
-    assert package.status == "draft"
+    assert package.status == "frozen"
     assert [p.id for p in package.runnable_passages()] == ["P1", "P2", "P3", "P4"]
     assert not package.passages["P3"].is_pending
     assert package.passages["P4"].companion_passages == ("P2",)

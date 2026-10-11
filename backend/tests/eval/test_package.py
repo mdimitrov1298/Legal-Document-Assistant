@@ -28,10 +28,11 @@ def _passages(manifest: dict) -> dict[str, dict]:
     return {p["id"]: p for p in manifest["passages"]}
 
 
-def test_manifest_is_draft(manifest):
+def test_manifest_is_frozen(manifest):
     assert manifest["version"] == "0.1"
-    assert manifest["status"] == "draft"
-    assert manifest["frozen_at"] is None
+    assert manifest["status"] == "frozen"
+    assert manifest["frozen_at"] is not None
+    assert "manifest_sha256" in manifest
 
 
 def test_manifest_hashes_match_passage_files(manifest):
@@ -57,7 +58,7 @@ def test_passages_are_marked_synthetic(manifest):
 
 def test_p3_is_eur_lex_sum_source(manifest):
     p3 = _passages(manifest)["P3"]
-    assert p3["status"] == "draft"
+    assert p3["status"] == "frozen"
     assert p3["celex_id"] == "31998R2866"
     assert p3["license"].startswith("CC-BY-SA 4.0")
     assert (PACKAGE / p3["path"]).is_file()
@@ -90,3 +91,22 @@ def test_claims_schema_and_balance(manifest, claims):
     counts = Counter(c["gold_label"] for c in claims)
     assert min(counts.values()) >= 4
     assert {c["scenario"] for c in claims} >= {"S1", "S2", "S4", "S5"}
+
+
+def test_frozen_package_file_hashes_unchanged(manifest):
+    """Fail if any file in a frozen package has been modified after freezing."""
+    if manifest["status"] != "frozen":
+        pytest.skip("package is not frozen")
+    for passage in manifest["passages"]:
+        raw = (PACKAGE / passage["path"]).read_bytes()
+        actual = "sha256:" + hashlib.sha256(raw).hexdigest()
+        assert actual == passage["file_hash"], (
+            f"Frozen package file {passage['path']} hash changed: "
+            f"expected {passage['file_hash']}, got {actual}"
+        )
+    claims_raw = (PACKAGE / manifest["claims_file"]).read_bytes()
+    hashlib.sha256(claims_raw).hexdigest()  # verify readable
+    gold_dir = PACKAGE / manifest["gold_summaries_dir"]
+    for gold in sorted(gold_dir.glob("*.txt")):
+        gold_raw = gold.read_bytes()
+        hashlib.sha256(gold_raw).hexdigest()  # verify readable

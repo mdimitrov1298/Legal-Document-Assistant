@@ -28,11 +28,12 @@ def _passages(manifest: dict) -> dict[str, dict]:
     return {p["id"]: p for p in manifest["passages"]}
 
 
-def test_manifest_is_draft(manifest):
+def test_manifest_is_frozen(manifest):
     assert manifest["version"] == "0.1"
-    assert manifest["status"] == "draft"
-    assert manifest["frozen_at"] is None
+    assert manifest["status"] == "frozen"
+    assert manifest["frozen_at"] is not None
     assert manifest["language"] == "en"
+    assert "manifest_sha256" in manifest
 
 
 def test_manifest_hashes_match_passage_files(manifest):
@@ -53,7 +54,7 @@ def test_synthetic_passages_are_marked(manifest):
 
 def test_p3_is_eur_lex_sum_source(manifest):
     p3 = _passages(manifest)["P3"]
-    assert p3["status"] == "draft"
+    assert p3["status"] == "frozen"
     assert p3["celex_id"] == "31998R2866"
     assert p3["license"].startswith("CC-BY-SA 4.0")
     assert (PACKAGE / p3["path"]).is_file()

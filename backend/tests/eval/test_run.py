@@ -66,7 +66,7 @@ async def test_run_writes_metadata_and_records(tmp_path: Path):
     assert header["top_k"] == 5
     assert header["chunk_size"] == 800
     assert header["embedding_backend"] == "hash_stub"
-    assert header["package"]["status"] == "draft"
+    assert header["package"]["status"] == "frozen"
     assert header["package"]["manifest_sha256"].startswith("sha256:")
     assert header["prompt_version"]
     assert header["prompt_versions"] == {"bg": "bg-v1", "en": "en-v1"}
