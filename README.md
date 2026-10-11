@@ -146,6 +146,9 @@ Settings come from environment variables or `.env` (see
 | `CHROMA_PATH` | `./data/chroma` | Persistent vector store |
 | `UPLOAD_DIR` | `./data/uploads` | Uploaded files |
 | `API_HOST` / `API_PORT` | `0.0.0.0` / `8000` | Used by `backend/run.py` |
+| `MODEL_ROUTING` | `off` | `off` or `language`; when `language`, the pipeline picks the Ollama model by answer language (BG/EN) |
+| `OLLAMA_MODEL_BG` | `s_emanuilov/BgGPT-v1.0:9b` | Model for Bulgarian when `MODEL_ROUTING=language` |
+| `OLLAMA_MODEL_EN` | `qwen2.5:7b` | Model for English when `MODEL_ROUTING=language` |
 | `CORS_ORIGINS` | Vite localhost URLs | Comma-separated allowed origins |
 
 If the configured embedding backend cannot load, ingest falls back to
@@ -259,6 +262,10 @@ typecheck and build for the frontend.
 2. Keep `OLLAMA_NUM_CTX` moderate (4096 or 8192); the KV cache grows with it.
 3. Keep `EMBEDDING_DEVICE=cpu` and MiniLM (about 80 MB) next to the LLM.
 4. Close other heavy applications if Ollama starts swapping.
+5. When using `MODEL_ROUTING=language`, Ollama loads models alternately (BgGPT
+   for BG, qwen for EN). The two models do not need to be resident together;
+   set `OLLAMA_MAX_LOADED_MODELS=1` in the Ollama server environment so Ollama
+   unloads the previous model before loading the next one.
 
 ## Academic use
 

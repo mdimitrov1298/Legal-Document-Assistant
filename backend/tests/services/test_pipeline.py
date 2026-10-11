@@ -274,3 +274,110 @@ def test_verdict_regex_recovers_from_truncated_json():
     assert _parse_json_object(raw) == {}
     m = _VERDICT_FIELD.search(raw)
     assert m and m.group(1) == "supported"
+
+
+# ---------------------------------------------------------------------------
+# Language-based model routing tests (W8)
+# ---------------------------------------------------------------------------
+
+
+HIT_EN = {
+    "chunk_id": "doc3:0",
+    "text": "The contract was signed by John Smith on 15 January 2024.",
+    "metadata": {
+        "document_id": "doc3",
+        "document_filename": "contract.txt",
+        "chunk_index": 0,
+        "language": "en",
+    },
+    "relevance": 0.88,
+}
+
+
+@pytest.fixture
+def rag_env_en(monkeypatch: pytest.MonkeyPatch):
+    """Env where all chunks are English."""
+    case = {"id": "case-en", "title": "English", "documents": [], "status": "ingested"}
+    store = MagicMock()
+    store.get_case.return_value = case
+    store.require_case.return_value = case
+    vs = MagicMock()
+    vs.query.return_value = [HIT_EN]
+    monkeypatch.setattr(pipeline, "get_store", lambda: store)
+    monkeypatch.setattr(pipeline, "get_vectorstore", lambda: vs)
+    return store, vs
+
+
+async def test_routing_off_uses_default_model(rag_env, install_llm, monkeypatch):
+    """With routing=off, the default OLLAMA_MODEL is used."""
+    monkeypatch.setenv("MODEL_ROUTING", "off")
+    from app.core.config import clear_settings_cache
+
+    clear_settings_cache()
+    install_llm(_down)
+    result = await pipeline.verify_claim("case-1", "Нещо")
+    assert result.routed is False
+    assert result.model == "qwen2.5:7b"
+
+
+async def test_routing_language_bg_uses_bg_model(rag_env, install_llm, monkeypatch):
+    """With routing=language, BG chunks → OLLAMA_MODEL_BG."""
+    monkeypatch.setenv("MODEL_ROUTING", "language")
+    monkeypatch.setenv("OLLAMA_MODEL_BG", "bggpt-test:latest")
+    from app.core.config import clear_settings_cache
+
+    clear_settings_cache()
+    install_llm(_down)
+    result = await pipeline.verify_claim("case-1", "Нещо")
+    assert result.routed is True
+    assert result.model == "bggpt-test:latest"
+
+
+async def test_routing_language_en_uses_en_model(rag_env_en, install_llm, monkeypatch):
+    """With routing=language, EN chunks → OLLAMA_MODEL_EN."""
+    monkeypatch.setenv("MODEL_ROUTING", "language")
+    monkeypatch.setenv("OLLAMA_MODEL_EN", "qwen-test:latest")
+    from app.core.config import clear_settings_cache
+
+    clear_settings_cache()
+    install_llm(_down)
+    result = await pipeline.verify_claim("case-en", "Something")
+    assert result.routed is True
+    assert result.model == "qwen-test:latest"
+
+
+async def test_routing_language_summarize(rag_env, install_llm, monkeypatch):
+    """Summarize respects routing too."""
+    monkeypatch.setenv("MODEL_ROUTING", "language")
+    monkeypatch.setenv("OLLAMA_MODEL_BG", "bggpt-test:latest")
+    from app.core.config import clear_settings_cache
+
+    clear_settings_cache()
+    install_llm(_down)
+    result = await pipeline.summarize_case("case-1")
+    assert result.routed is True
+    assert result.model == "bggpt-test:latest"
+
+
+async def test_routing_language_ask(rag_env_en, install_llm, monkeypatch):
+    """Ask respects routing too."""
+    monkeypatch.setenv("MODEL_ROUTING", "language")
+    monkeypatch.setenv("OLLAMA_MODEL_EN", "qwen-test:latest")
+    from app.core.config import clear_settings_cache
+
+    clear_settings_cache()
+    install_llm(_down)
+    result = await pipeline.ask_question("case-en", "What is the contract?")
+    assert result.routed is True
+    assert result.model == "qwen-test:latest"
+
+
+async def test_routing_off_response_has_routed_false(rag_env, install_llm):
+    """Default (routing=off) responses have routed=False."""
+    install_llm(_down)
+    summary = await pipeline.summarize_case("case-1")
+    assert summary.routed is False
+    verify = await pipeline.verify_claim("case-1", "Нещо")
+    assert verify.routed is False
+    ask = await pipeline.ask_question("case-1", "Какъв е срокът?")
+    assert ask.routed is False

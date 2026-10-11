@@ -79,6 +79,20 @@ def test_models_when_down(client):
     assert data["active"] == "qwen2.5:7b"
     assert data["reachable"] is False
     assert data["installed"] == []
+    assert data["routing"]["mode"] == "off"
+
+
+def test_models_routing_language(client, install_llm, monkeypatch):
+    """When MODEL_ROUTING=language, /models shows routing config."""
+    monkeypatch.setenv("MODEL_ROUTING", "language")
+    from app.core.config import clear_settings_cache
+
+    clear_settings_cache()
+    install_llm(_tags("qwen2.5:7b"))
+    data = client.get("/api/v1/models").json()
+    assert data["routing"]["mode"] == "language"
+    assert data["routing"]["model_bg"] == "s_emanuilov/BgGPT-v1.0:9b"
+    assert data["routing"]["model_en"] == "qwen2.5:7b"
 
 
 def test_operation_ids_use_route_names(client):
