@@ -69,6 +69,7 @@ async def test_run_writes_metadata_and_records(tmp_path: Path):
     assert header["package"]["status"] == "draft"
     assert header["package"]["manifest_sha256"].startswith("sha256:")
     assert header["prompt_version"]
+    assert header["prompt_versions"] == {"bg": "bg-v1", "en": "en-v1"}
     assert "commit" in header["git"]
 
     kinds = [r["type"] for r in records]
@@ -87,6 +88,11 @@ async def test_run_writes_metadata_and_records(tmp_path: Path):
     assert footer["errors"] == 0
     assert footer["harness_peak_rss_bytes"] > 0
     assert all("retrieval_ms" in r and "generation_ms" in r for r in verify)
+    assert all(r.get("answer_language") == "bg" for r in verify)
+    assert all(r.get("prompt_version") == "bg-v1" for r in verify)
+    summaries = [r for r in records if r["type"] == "summary"]
+    assert all(r.get("answer_language") == "bg" for r in summaries)
+    assert all(r.get("prompt_version") == "bg-v1" for r in summaries)
 
     result = score_records(header, records, footer)
     assert result["claims_scored"] == 25
@@ -118,6 +124,46 @@ async def test_explicit_work_dir_is_kept(tmp_path: Path):
         llm=_client(_down),
     )
     assert (work / "data" / "cases_index.json").exists()
+
+
+PACKAGE_EN = Path(__file__).resolve().parents[3] / "eval" / "eval-en-v0.1"
+
+
+def _mock_ollama_en(request: httpx.Request) -> httpx.Response:
+    if request.url.path == "/api/tags":
+        return httpx.Response(200, json={"models": [{"name": "qwen2.5:7b"}]})
+    if request.url.path == "/api/version":
+        return httpx.Response(200, json={"version": "0.0-test"})
+    body = json.loads(request.content)
+    if "CLAIM" in body["prompt"]:
+        first_chunk = body["prompt"].split("[0] ", 1)[1].split("\n", 1)[1]
+        answer = {
+            "verdict": "supported",
+            "rationale": "Quote [0].",
+            "supporting_quotes": [{"index": 0, "quote": first_chunk[:40]}],
+            "denying_quotes": [],
+        }
+    else:
+        answer = {"summary": "Short summary.", "citation_indices": [0]}
+    return httpx.Response(200, json={"response": json.dumps(answer)})
+
+
+async def test_en_run_records_en_prompt_version(tmp_path: Path):
+    """EN eval package records en-v1 prompt version in header and records."""
+    if not PACKAGE_EN.exists():
+        pytest.skip("eval-en-v0.1 package not present")
+    path = await run_evaluation(
+        RunConfig(package=PACKAGE_EN, out_dir=tmp_path / "runs"),
+        llm=_client(_mock_ollama_en),
+    )
+    header, records, _ = load_run(path)
+    assert header["prompt_versions"]["en"] == "en-v1"
+    verify = [r for r in records if r["type"] == "verify"]
+    assert all(r.get("answer_language") == "en" for r in verify)
+    assert all(r.get("prompt_version") == "en-v1" for r in verify)
+    summaries = [r for r in records if r["type"] == "summary"]
+    assert all(r.get("answer_language") == "en" for r in summaries)
+    assert all(r.get("prompt_version") == "en-v1" for r in summaries)
 
 
 def test_cli_arguments_map_to_config():

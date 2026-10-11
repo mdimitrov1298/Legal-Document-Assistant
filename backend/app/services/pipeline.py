@@ -227,6 +227,7 @@ async def summarize_case(
         retrieval_ms=retrieval_ms,
         generation_ms=generation_ms,
         answer_language=lang,
+        prompt_version=prompts.get_prompt_version(lang),
     )
 
 
@@ -304,4 +305,5 @@ async def verify_claim(
         retrieval_ms=retrieval_ms,
         generation_ms=generation_ms,
         answer_language=lang,
+        prompt_version=prompts.get_prompt_version(lang),
     )

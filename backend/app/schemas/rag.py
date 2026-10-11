@@ -68,6 +68,7 @@ class SummarizeResponse(BaseModel):
     retrieval_ms: float = 0.0
     generation_ms: float = 0.0
     answer_language: str = "bg"
+    prompt_version: str = ""
 
 
 class VerifyRequest(BaseModel):
@@ -105,3 +106,4 @@ class VerifyResponse(BaseModel):
     retrieval_ms: float = 0.0
     generation_ms: float = 0.0
     answer_language: str = "bg"
+    prompt_version: str = ""

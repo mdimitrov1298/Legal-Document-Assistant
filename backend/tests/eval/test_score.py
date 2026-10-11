@@ -17,6 +17,8 @@ HEADER = {
     "top_k": 5,
     "embedding_backend": "sentence-transformers",
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "prompt_version": "bg-v1",
+    "prompt_versions": {"bg": "bg-v1", "en": "en-v1"},
     "package": {"name": "eval-v0.1", "version": "0.1", "status": "draft"},
 }
 FOOTER = {"type": "run_end", "stubbed_outputs": 0, "errors": 0}
@@ -66,6 +68,7 @@ def test_metrics():
     assert result["per_scenario"]["S5"] == {"claims": 2, "accuracy": 0.5}
     assert result["valid_for_comparison"] is True
     assert result["warnings"] == ["evaluation package is not frozen (draft)"]
+    assert result["run"]["prompt_version"] == "bg-v1"
 
 
 def test_stubbed_and_errors_invalidate():

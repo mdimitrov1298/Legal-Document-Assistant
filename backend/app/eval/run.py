@@ -44,7 +44,7 @@ from app.services.embeddings import (
     reset_embedder,
 )
 from app.services.llm import OllamaClient, reset_llm
-from app.services.prompts import PROMPT_VERSION
+from app.services.prompts import PROMPT_VERSION, get_prompt_version
 from app.services.storage import get_store, reset_store
 from app.services.vector_store import reset_vectorstore
 
@@ -214,6 +214,8 @@ async def _run_passage(
                 "generation_ms": summary.generation_ms,
                 "model": summary.model,
                 "stubbed": summary.stubbed,
+                "answer_language": summary.answer_language,
+                "prompt_version": summary.prompt_version,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 1),
             }
         )
@@ -254,6 +256,8 @@ async def _run_passage(
                 "generation_ms": result.generation_ms,
                 "model": result.model,
                 "stubbed": result.stubbed,
+                "answer_language": result.answer_language,
+                "prompt_version": result.prompt_version,
                 "latency_ms": round((time.perf_counter() - started) * 1000, 1),
             }
         )
@@ -301,6 +305,10 @@ async def run_evaluation(config: RunConfig, *, llm: OllamaClient | None = None) 
                 "embedding_backend_configured": settings.embedding_backend,
                 "embedding_model": settings.embedding_model,
                 "prompt_version": PROMPT_VERSION,
+                "prompt_versions": {
+                    "bg": get_prompt_version("bg"),
+                    "en": get_prompt_version("en"),
+                },
                 "stub_on_unavailable": client.stub_on_unavailable,
                 "repeats": config.repeats,
                 "python": sys.version.split()[0],
