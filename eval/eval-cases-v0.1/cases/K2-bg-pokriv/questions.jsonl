@@ -1,0 +1,5 @@
+{"q_id": "Q01", "question": "Каква е договорената цена за ремонта?", "gold_answer": "12 000 лв. с ДДС", "answer_type": "number", "gold_evidence": [{"document": "izlozhenie_fakti.txt", "char_span": [334, 350], "quote": "12 000 лв. с ДДС"}]}
+{"q_id": "Q02", "question": "Кога е завършен ремонтът?", "gold_answer": "20 юни 2024 г.", "answer_type": "date", "gold_evidence": [{"document": "izlozhenie_fakti.txt", "char_span": [671, 685], "quote": "20 юни 2024 г."}]}
+{"q_id": "Q03", "question": "Колко е прогнозната цена за отстраняване на дефектите?", "gold_answer": "1 800 лв.", "answer_type": "number", "gold_evidence": [{"document": "konstativен_protokol.txt", "char_span": [889, 898], "quote": "1 800 лв."}]}
+{"q_id": "Q04", "question": "Кой е извършил огледа на покрива?", "gold_answer": "инж. Елена Димова", "answer_type": "name", "gold_evidence": [{"document": "konstativен_protokol.txt", "char_span": [208, 225], "quote": "инж. Елена Димова"}]}
+{"q_id": "Q05", "question": "Има ли съдебно решение по спора?", "gold_answer": "not_found", "answer_type": "not_found", "gold_evidence": []}

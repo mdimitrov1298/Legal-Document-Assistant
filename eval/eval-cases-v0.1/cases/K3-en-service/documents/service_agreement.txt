@@ -1,0 +1,52 @@
+[SYNTHETIC DEMO TEXT: fictional service agreement for evaluation purposes; all parties are fictitious.]
+
+IT SERVICES AGREEMENT
+
+This Agreement is entered into on 15 January 2025 between:
+
+Client: Greenfield Analytics Ltd, a company registered in England and Wales (company number 09876543), with its registered office at 14 Mill Lane, Cambridge CB2 1RX ("the Client");
+
+and
+
+Provider: BrightCode Solutions Ltd, a company registered in England and Wales (company number 11234567), with its registered office at 7 Victoria Road, London EC1V 2NX ("the Provider").
+
+1. SCOPE OF SERVICES
+1.1 The Provider shall design, develop and deploy a bespoke data-analytics dashboard (the "Platform") for the Client's internal use.
+1.2 The Platform shall support up to 500 concurrent users and process a minimum of 10,000 data records per hour.
+1.3 The Provider shall deliver the Platform in three phases:
+    Phase 1 — Requirements and design: by 28 February 2025.
+    Phase 2 — Development and testing: by 30 June 2025.
+    Phase 3 — Deployment and handover: by 31 August 2025.
+
+2. FEES AND PAYMENT
+2.1 The total fee for the Services is GBP 120,000 (one hundred and twenty thousand pounds), payable as follows:
+    (a) GBP 30,000 upon signing of this Agreement;
+    (b) GBP 45,000 upon completion of Phase 2;
+    (c) GBP 45,000 upon acceptance of the Platform after Phase 3.
+2.2 Invoices are payable within 30 days of receipt.
+2.3 Late payments shall attract interest at 3% per annum above the Bank of England base rate.
+
+3. INTELLECTUAL PROPERTY
+3.1 All intellectual property in the Platform created under this Agreement shall vest in the Client upon full payment.
+3.2 The Provider retains the right to reuse general-purpose libraries and frameworks that were not created specifically for the Client.
+
+4. WARRANTIES AND LIABILITY
+4.1 The Provider warrants that the Platform will conform to the agreed specification for a period of 12 months after acceptance.
+4.2 The Provider's total aggregate liability under this Agreement shall not exceed the total fees paid.
+4.3 Neither party shall be liable for indirect or consequential losses.
+
+5. CONFIDENTIALITY
+5.1 Each party shall keep confidential any information received from the other party that is marked as confidential or that ought reasonably to be considered confidential.
+5.2 The obligation of confidentiality shall survive termination of this Agreement for a period of 5 years.
+
+6. TERMINATION
+6.1 Either party may terminate this Agreement by giving 30 days' written notice if the other party commits a material breach that is not remedied within 14 days of written notice of the breach.
+6.2 Upon termination, the Client shall pay for all work completed up to the date of termination.
+
+7. GOVERNING LAW
+This Agreement shall be governed by and construed in accordance with the laws of England and Wales.
+
+Signed:
+For Greenfield Analytics Ltd: James Whitfield, Director
+For BrightCode Solutions Ltd: Sarah Chen, Managing Director
+Date: 15 January 2025

@@ -1,0 +1,131 @@
+{
+    "name": "eval-cases-v0.1",
+    "version": "0.1",
+    "status": "draft",
+    "frozen_at": null,
+    "description": "Case-level evaluation package for the Legal Document Assistant prototype. Each case contains multiple documents uploaded together and is tested end to end: create, upload, ingest, summarize, verify, ask, search. Two Bulgarian and two English cases covering synthetic and public (EUR-Lex) documents in TXT and PDF formats.",
+    "hash_algorithm": "sha256",
+    "cases": [
+        {
+            "case_id": "K1-bg-uslugi",
+            "language": "bg",
+            "source": "project-original synthetic text",
+            "documents": [
+                {
+                    "filename": "bg_dogovor_uslugi_demo.txt",
+                    "path": "cases/K1-bg-uslugi/documents/bg_dogovor_uslugi_demo.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:7ef597a8deb95c4ae049d8b02d44ddde7159c8683181025d82f64c021bee92b4",
+                    "word_count_approx": 187
+                },
+                {
+                    "filename": "bg_priemo_predavatelen_protokol_demo.txt",
+                    "path": "cases/K1-bg-uslugi/documents/bg_priemo_predavatelen_protokol_demo.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:f9076f30b51eb9b04279f6c44e2548242f7a626270e67f8c25f5fdaae1cb510f",
+                    "word_count_approx": 134
+                },
+                {
+                    "filename": "bg_zapiska_svidetel_demo.txt",
+                    "path": "cases/K1-bg-uslugi/documents/bg_zapiska_svidetel_demo.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:4b358b4b433fb14bcdb1a7e4d5ec760cf351498d0c54251578f4c08cddc5b5a3",
+                    "word_count_approx": 118
+                }
+            ],
+            "claims_file": "cases/K1-bg-uslugi/claims.jsonl",
+            "questions_file": "cases/K1-bg-uslugi/questions.jsonl",
+            "gold_summary_file": "cases/K1-bg-uslugi/gold_summary.txt"
+        },
+        {
+            "case_id": "K2-bg-pokriv",
+            "language": "bg",
+            "source": "project-original synthetic text",
+            "documents": [
+                {
+                    "filename": "izlozhenie_fakti.txt",
+                    "path": "cases/K2-bg-pokriv/documents/izlozhenie_fakti.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:1e6d4fcca40ceee6e9243edf7d5f9336b0e1ac795a7a726c3421e62ef91d9c18",
+                    "word_count_approx": 202
+                },
+                {
+                    "filename": "konstativен_protokol.pdf",
+                    "path": "cases/K2-bg-pokriv/documents/konstativен_protokol.pdf",
+                    "format": "pdf",
+                    "file_hash": "sha256:a9b76b4abaa6908380bee505ab20b172d0cb455161437e4442b1dc768a940089"
+                },
+                {
+                    "filename": "konstativен_protokol.txt",
+                    "path": "cases/K2-bg-pokriv/documents/konstativен_protokol.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:42cc3f842ce8ba2c07954c0c39de720f774764c4fc6c773ca2399816b0c881c4",
+                    "word_count_approx": 160
+                }
+            ],
+            "claims_file": "cases/K2-bg-pokriv/claims.jsonl",
+            "questions_file": "cases/K2-bg-pokriv/questions.jsonl",
+            "gold_summary_file": "cases/K2-bg-pokriv/gold_summary.txt"
+        },
+        {
+            "case_id": "K3-en-service",
+            "language": "en",
+            "source": "project-original synthetic text",
+            "documents": [
+                {
+                    "filename": "dispute_letter.pdf",
+                    "path": "cases/K3-en-service/documents/dispute_letter.pdf",
+                    "format": "pdf",
+                    "file_hash": "sha256:ab7dc98a734fe6a074fcf4a2a127b40359ef26ea2e0f32f4a26dc42dfc1f9d61"
+                },
+                {
+                    "filename": "dispute_letter.txt",
+                    "path": "cases/K3-en-service/documents/dispute_letter.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:e6a1eefc27ad03595f34799a088a80c6e5b65acd83368e438b28812e5eb88219",
+                    "word_count_approx": 317
+                },
+                {
+                    "filename": "service_agreement.txt",
+                    "path": "cases/K3-en-service/documents/service_agreement.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:f8457c2793ce60c295c92e654561e699528717045dbf78a3fb0d87bad2107216",
+                    "word_count_approx": 472
+                }
+            ],
+            "claims_file": "cases/K3-en-service/claims.jsonl",
+            "questions_file": "cases/K3-en-service/questions.jsonl",
+            "gold_summary_file": "cases/K3-en-service/gold_summary.txt"
+        },
+        {
+            "case_id": "K4-en-eurlex",
+            "language": "en",
+            "source": "EUR-Lex-Sum dataset (CC-BY-SA 4.0)",
+            "documents": [
+                {
+                    "filename": "32015D2071_forced_labour.txt",
+                    "path": "cases/K4-en-eurlex/documents/32015D2071_forced_labour.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:1161d9b307a3f2c5cb875530a4e918f3ee297e69a6b59dc18102b98fc6522325",
+                    "word_count_approx": 840
+                },
+                {
+                    "filename": "32016D1841_paris_agreement.pdf",
+                    "path": "cases/K4-en-eurlex/documents/32016D1841_paris_agreement.pdf",
+                    "format": "pdf",
+                    "file_hash": "sha256:d7cb209f8da964c55d375b96a8fb70e71659df9f5571193dc6b7134bb34ecb45"
+                },
+                {
+                    "filename": "32016D1841_paris_agreement.txt",
+                    "path": "cases/K4-en-eurlex/documents/32016D1841_paris_agreement.txt",
+                    "format": "txt",
+                    "file_hash": "sha256:b8677bb4b90bff7de8583928851164e8feee033f5355eb36ad5be7d3c937e474",
+                    "word_count_approx": 965
+                }
+            ],
+            "claims_file": "cases/K4-en-eurlex/claims.jsonl",
+            "questions_file": "cases/K4-en-eurlex/questions.jsonl",
+            "gold_summary_file": "cases/K4-en-eurlex/gold_summary.txt"
+        }
+    ]
+}
