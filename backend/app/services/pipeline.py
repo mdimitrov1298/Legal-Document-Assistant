@@ -32,17 +32,28 @@ logger = logging.getLogger(__name__)
 QUERYABLE_STATUSES = {STATUS_INGESTED, STATUS_STALE}
 SUMMARY_FALLBACK_QUERY = "страни дати суми срокове задължения"
 SUMMARY_FALLBACK_QUERY_EN = "parties dates amounts deadlines obligations"
+LANGUAGE_OTHER_WARNING = (
+    "Документите са на неподдържан език; използвани са българските промптове. "
+    "Качеството не е измерено за този език."
+)
 
 
 def _resolve_language(
     hits: list[dict[str, Any]],
     answer_language: str = "auto",
-) -> Language:
-    """Determine the prompt language from retrieved chunks or an explicit override."""
+) -> tuple[Language, bool]:
+    """Determine the prompt language from retrieved chunks or an explicit override.
+
+    Returns ``(language, is_other)`` where *is_other* is True when the
+    detected language was ``"other"`` and BG prompts are used as fallback.
+    """
     if answer_language in ("bg", "en"):
-        return answer_language  # type: ignore[return-value]
+        return answer_language, False  # type: ignore[return-value]
     langs: list[Language] = [h.get("metadata", {}).get("language", "bg") for h in hits]
-    return majority_language(langs)
+    resolved = majority_language(langs)
+    if resolved == "other":
+        return "bg", True
+    return resolved, False
 
 
 def _elapsed_ms(started: float) -> float:
@@ -188,7 +199,7 @@ async def summarize_case(
         hits = vs.query(case_id, SUMMARY_FALLBACK_QUERY, top_k=top_k)
     retrieval_ms = _elapsed_ms(retrieval_started)
 
-    lang = _resolve_language(hits, answer_language)
+    lang, lang_is_other = _resolve_language(hits, answer_language)
     system_prompt = prompts.get_summarize_system(lang)
     prompt = prompts.build_summarize_prompt(case.get("title"), hits, language=lang)
     generation_started = time.perf_counter()
@@ -228,6 +239,7 @@ async def summarize_case(
         generation_ms=generation_ms,
         answer_language=lang,
         prompt_version=prompts.get_prompt_version(lang),
+        language_warning=LANGUAGE_OTHER_WARNING if lang_is_other else None,
     )
 
 
@@ -248,7 +260,7 @@ async def verify_claim(
     retrieved = [citation_from_hit(h) for h in hits]
     retrieval_ms = _elapsed_ms(retrieval_started)
 
-    lang = _resolve_language(hits, answer_language)
+    lang, lang_is_other = _resolve_language(hits, answer_language)
     system_prompt = prompts.get_verify_system(lang)
     prompt = prompts.build_verify_prompt(claim, hits, language=lang)
     generation_started = time.perf_counter()
@@ -306,4 +318,5 @@ async def verify_claim(
         generation_ms=generation_ms,
         answer_language=lang,
         prompt_version=prompts.get_prompt_version(lang),
+        language_warning=LANGUAGE_OTHER_WARNING if lang_is_other else None,
     )

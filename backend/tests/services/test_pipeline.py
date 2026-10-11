@@ -147,6 +147,55 @@ async def test_verify_unknown_verdict_becomes_inconclusive(rag_env, install_llm)
     assert result.verdict.value == "inconclusive"
 
 
+HIT_OTHER = {
+    "chunk_id": "doc2:0",
+    "text": "Der Vertrag wird am 1. Januar 2024 unterzeichnet.",
+    "metadata": {
+        "document_id": "doc2",
+        "document_filename": "vertrag.txt",
+        "chunk_index": 0,
+        "language": "other",
+    },
+    "relevance": 0.70,
+}
+
+
+@pytest.fixture
+def rag_env_other(monkeypatch: pytest.MonkeyPatch):
+    """Env where all chunks are detected as 'other' language."""
+    case = {"id": "case-2", "title": "Deutsch", "documents": [], "status": "ingested"}
+    store = MagicMock()
+    store.get_case.return_value = case
+    store.require_case.return_value = case
+    vs = MagicMock()
+    vs.query.return_value = [HIT_OTHER]
+    monkeypatch.setattr(pipeline, "get_store", lambda: store)
+    monkeypatch.setattr(pipeline, "get_vectorstore", lambda: vs)
+    return store, vs
+
+
+async def test_other_language_uses_bg_prompts_and_warns(rag_env_other, install_llm):
+    install_llm(_down)
+    result = await pipeline.verify_claim("case-2", "Der Vertrag ist gültig")
+    assert result.answer_language == "bg"
+    assert result.language_warning is not None
+    assert "неподдържан" in result.language_warning
+
+
+async def test_other_language_summarize_warns(rag_env_other, install_llm):
+    install_llm(_down)
+    result = await pipeline.summarize_case("case-2")
+    assert result.answer_language == "bg"
+    assert result.language_warning is not None
+
+
+async def test_bg_language_no_warning(rag_env, install_llm):
+    install_llm(_down)
+    result = await pipeline.verify_claim("case-1", "Нещо")
+    assert result.answer_language == "bg"
+    assert result.language_warning is None
+
+
 def test_parse_json_object_handles_markdown_code_block():
     from app.services.pipeline import _parse_json_object
 
