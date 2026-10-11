@@ -158,6 +158,68 @@ def test_verify_claim_length_validated(client):
     assert r.status_code == 422
 
 
+def test_search_on_indexed_case(client):
+    case_id = create_case(client)
+    upload(client, case_id)
+    ingest(client, case_id)
+    r = client.post(
+        f"{API}/cases/{case_id}/search",
+        json={"query": "4500", "mode": "keyword"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["mode"] == "keyword"
+    assert body["query"] == "4500"
+    assert len(body["results"]) >= 1
+    result = body["results"][0]
+    assert result["document_filename"] == "dogovor.txt"
+    assert any(
+        "4500" in body["results"][0]["text"][h["start"] : h["end"]]
+        for h in result["highlights"]
+    )
+
+
+def test_search_hybrid_on_indexed_case(client):
+    case_id = create_case(client)
+    upload(client, case_id)
+    ingest(client, case_id)
+    r = client.post(
+        f"{API}/cases/{case_id}/search",
+        json={"query": "4500", "mode": "hybrid"},
+    )
+    assert r.status_code == 200
+    assert r.json()["mode"] == "hybrid"
+    assert len(r.json()["results"]) >= 1
+
+
+def test_search_empty_query_is_422(client):
+    case_id = create_case(client)
+    upload(client, case_id)
+    ingest(client, case_id)
+    r = client.post(
+        f"{API}/cases/{case_id}/search", json={"query": "", "mode": "keyword"}
+    )
+    assert r.status_code == 422
+
+
+def test_search_not_ingested_is_409(client):
+    case_id = create_case(client)
+    upload(client, case_id)
+    r = client.post(
+        f"{API}/cases/{case_id}/search", json={"query": "test", "mode": "keyword"}
+    )
+    assert r.status_code == 409
+    assert r.json()["error"]["code"] == "case_not_ingested"
+
+
+def test_search_unknown_case_is_404(client):
+    r = client.post(
+        f"{API}/cases/nope/search", json={"query": "test", "mode": "keyword"}
+    )
+    assert r.status_code == 404
+    assert r.json()["error"]["code"] == "case_not_found"
+
+
 def test_old_flat_routes_are_gone(client):
     assert client.get("/api/health").status_code == 404
     assert client.post("/api/cases", json={"title": "x"}).status_code == 404

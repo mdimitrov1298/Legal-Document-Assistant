@@ -152,6 +152,25 @@ Conventions:
 
 ---
 
+## Search Endpoint
+
+### POST /api/v1/cases/{case_id}/search
+
+- **Description**: Interactive search over indexed case documents. Supports semantic (vector similarity), keyword (case-insensitive substring) and hybrid (reciprocal rank fusion) modes. No LLM call — works without Ollama
+- **Path Parameters**: `case_id` (UUID)
+- **Request Body**: `SearchRequest { "query": "string" (1..1000 chars), "top_k": int (1..50, default 10), "mode": "semantic" | "keyword" | "hybrid" (default "hybrid") }`
+- **Response**: `SearchResponse { query, results: SearchResult[], duration_ms, mode }` (200 OK)
+- **Errors**: `case_not_found` (404), `case_not_ingested` (409), `validation_error` (422)
+- **Notes**:
+    - `semantic` uses the existing Chroma collection and embedding similarity
+    - `keyword` performs case-insensitive substring matching over all chunk texts
+    - `hybrid` merges semantic and keyword results using reciprocal rank fusion (RRF)
+    - Each result includes `highlights` with `{start, end}` character offsets for keyword matches in the chunk text
+    - Does not call the LLM, so it works even when Ollama is stopped
+- **Auth Required**: No (local single-user prototype)
+
+---
+
 ## Summarize & Verify Endpoints
 
 ### POST /api/v1/cases/{case_id}/summarize
@@ -309,6 +328,43 @@ chunk_count:        int
 embedding_backend:  string | null
 embedding_model:    string | null
 ingested_at:        datetime | null
+```
+
+### SearchRequest
+
+```text
+query:  string   (required, 1..1000 chars)
+top_k:  int      (optional, 1..50, default 10)
+mode:   "semantic" | "keyword" | "hybrid"   (default "hybrid")
+```
+
+### SearchResponse
+
+```text
+query:       string
+results:     SearchResult[]
+duration_ms: float
+mode:        string
+```
+
+### SearchResult
+
+```text
+document_id:        string (UUID)
+document_filename:  string
+chunk_id:           string
+chunk_index:        int | null
+text:               string
+score:              float
+highlights:         SearchHighlight[]
+language:           string
+```
+
+### SearchHighlight
+
+```text
+start:  int   (character offset in text)
+end:    int   (character offset in text)
 ```
 
 ### SummarizeRequest

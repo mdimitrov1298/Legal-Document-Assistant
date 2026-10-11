@@ -9,12 +9,15 @@ from app.schemas.common import error_responses
 from app.schemas.rag import (
     IndexStatsResponse,
     IngestResponse,
+    SearchRequest,
+    SearchResponse,
     SummarizeRequest,
     SummarizeResponse,
     VerifyRequest,
     VerifyResponse,
 )
 from app.services import pipeline
+from app.services.search import search_case
 from app.services.storage import get_store
 from app.services.vector_store import VectorStore, get_vectorstore
 
@@ -73,3 +76,13 @@ async def verify_claim(case_id: str, body: VerifyRequest) -> VerifyResponse:
     return await pipeline.verify_claim(
         case_id, body.claim, top_k=body.top_k, answer_language=body.answer_language
     )
+
+
+@router.post(
+    "/search",
+    response_model=SearchResponse,
+    responses=error_responses(404, 409, 422),
+)
+async def search(case_id: str, body: SearchRequest) -> SearchResponse:
+    """Interactive search over indexed case documents. No LLM call required."""
+    return search_case(case_id, body.query, top_k=body.top_k, mode=body.mode)

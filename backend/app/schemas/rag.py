@@ -46,6 +46,39 @@ class Citation(BaseModel):
     )
 
 
+class SearchHighlight(BaseModel):
+    start: int
+    end: int
+
+
+class SearchResult(BaseModel):
+    document_id: str
+    document_filename: str
+    chunk_id: str
+    chunk_index: int | None = None
+    text: str
+    score: float
+    highlights: list[SearchHighlight] = Field(default_factory=list)
+    language: str = "bg"
+
+
+class SearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, max_length=1000)
+    top_k: int = Field(10, ge=1, le=50)
+    mode: str = Field(
+        "hybrid",
+        pattern=r"^(semantic|keyword|hybrid)$",
+        description="Search mode: semantic, keyword or hybrid",
+    )
+
+
+class SearchResponse(BaseModel):
+    query: str
+    results: list[SearchResult] = Field(default_factory=list)
+    duration_ms: float = 0.0
+    mode: str = "hybrid"
+
+
 class SummarizeRequest(BaseModel):
     top_k: int | None = Field(
         None, ge=1, le=20, description="Defaults to SUMMARIZE_TOP_K (8)"
