@@ -21,8 +21,10 @@
 
 The Legal Document Assistant is a local research prototype that helps a legal professional or law student work through the documents of a single case. The user creates a case, uploads Bulgarian or English PDF or TXT files, and the system indexes them locally. The document language is detected automatically and prompts are selected accordingly. On top of that index the system offers two functions:
 
-1. **Summarize:** a short factual summary of the case documents in Bulgarian, where every statement is traceable to retrieved excerpts (citations).
+1. **Summarize:** a short factual summary of the case documents, where every statement is traceable to retrieved excerpts (citations).
 2. **Verify:** a check of a user-supplied factual claim against the case documents, returning `supported`, `denied` or `inconclusive` together with direct quotes.
+3. **Search:** interactive search over indexed documents (semantic, keyword or hybrid mode) without requiring the LLM.
+4. **Ask:** free-form question answering with citations, where the model answers only from retrieved excerpts and refuses legal advice.
 
 All processing happens on the user's machine: text extraction, embeddings, the vector store and the language model (served by Ollama). No case content is sent to a cloud LLM API. The system does not give legal advice, does not interpret law and does not draw legal conclusions; the final judgement always stays with the human reader.
 
@@ -63,7 +65,7 @@ The product consists of two parts that share one retrieval pipeline:
     - FastAPI service under the versioned prefix `/api/v1` (plus unversioned `/` and `/health`); full list in [api-endpoints.md](./api-endpoints.md).
     - Uniform error envelope `{ error: { code, message, details }, request_id }` for every non-2xx response, with stable snake_case codes.
     - `X-Request-ID` header on every response (echoed or generated) and an access log line per request (`LOG_FORMAT` text or json).
-    - `GET /api/v1/health` reports `ok` or `degraded`; `GET /api/v1/models` lists the active and installed models.
+    - `GET /api/v1/health` reports `ok` or `degraded`; `GET /api/v1/models` lists the active and installed models and model routing state.
     - Interactive OpenAPI documentation at `/docs`.
     - Configuration from environment variables (`.env`, pydantic-settings).
 - **Case and Document Storage**
@@ -89,6 +91,15 @@ The product consists of two parts that share one retrieval pipeline:
 - **Claim Verifier**
     - Retrieves top-k chunks for the claim text (3 to 1000 characters) and asks the local LLM for a JSON verdict: `supported`, `denied` or `inconclusive`, with rationale and supporting and denying evidence as `{index, quote}` pairs (index of the numbered excerpt plus a quote copied from it; legacy index lists are still accepted).
     - Returns supporting quotes, denying quotes and all retrieved quotes for transparency.
+- **Search**
+    - Interactive search over indexed case documents: semantic (vector similarity), keyword (case-insensitive substring) and hybrid (reciprocal rank fusion) modes.
+    - No LLM call; works without Ollama. Returns highlighted results with document name and chunk index.
+- **Question Answering**
+    - Free-form question answering with citations. The model answers only from retrieved excerpts and refuses legal advice or interpretation.
+    - Returns `answered` or `not_found` status with citations that carry `verbatim` flags.
+- **Language-based Model Routing**
+    - Optional (`MODEL_ROUTING=language`, default `off`): the pipeline picks the Ollama model by the resolved answer language (BG → `OLLAMA_MODEL_BG`, EN → `OLLAMA_MODEL_EN`, other → `OLLAMA_MODEL`).
+    - Responses include a `routed` flag indicating whether routing was applied. The `/api/v1/models` endpoint reports the routing state.
 - **Citation Checker**
     - Marks each quote `verbatim: true` when it occurs exactly (after whitespace normalisation) in the stored chunk text.
     - Non-verbatim quotes from the LLM are kept but flagged, so the user sees where the model paraphrased.

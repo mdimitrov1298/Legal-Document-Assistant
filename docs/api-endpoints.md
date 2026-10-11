@@ -29,10 +29,10 @@ Conventions:
 
 ### GET /api/v1/models
 
-- **Description**: Active generation model and the models installed in the local Ollama
-- **Response**: `{ "active": "string", "reachable": bool, "installed": ["string"] }` (200 OK)
+- **Description**: Active generation model, installed Ollama models and model routing state
+- **Response**: `{ "active": "string", "reachable": bool, "installed": ["string"], "routing": { "mode": "off"|"language", "model_bg": "string", "model_en": "string" } }` (200 OK)
 - **Errors**: `internal_error` (500)
-- **Notes**: `active` is the value of `OLLAMA_MODEL` (default `s_emanuilov/BgGPT-v1.0:9b`; for example also `qwen2.5:7b` or `llama3.1:8b`). `installed` is empty when Ollama is unreachable
+- **Notes**: `active` is the value of `OLLAMA_MODEL` (default `s_emanuilov/BgGPT-v1.0:9b`; for example also `qwen2.5:7b` or `llama3.1:8b`). `installed` is empty when Ollama is unreachable. `routing.mode` is `off` by default; when `language`, the pipeline picks the model by answer language (BG → `model_bg`, EN → `model_en`)
 - **Auth Required**: No (local single-user prototype)
 
 ---
@@ -366,6 +366,7 @@ citations:         Citation[]
 retrieved_quotes:  Citation[]
 model:             string
 stubbed:           bool
+routed:            bool     (true when language-based model routing selected this model)
 answer_language:   string
 prompt_version:    string
 language_warning:  string | null
@@ -425,6 +426,7 @@ summary:           string
 citations:         Citation[]
 model:             string   (Ollama tag used, e.g. "qwen2.5:7b")
 stubbed:           bool
+routed:            bool     (true when language-based model routing selected this model)
 chunks_used:       int
 duration_ms:       float
 retrieval_ms:      float
@@ -453,6 +455,7 @@ denying_quotes:     Citation[]
 retrieved_quotes:   Citation[]
 model:              string
 stubbed:            bool
+routed:             bool     (true when language-based model routing selected this model)
 duration_ms:        float
 retrieval_ms:       float
 generation_ms:      float
@@ -506,6 +509,10 @@ chunking:
 active:     string
 reachable:  bool
 installed:  string[]
+routing:
+  mode:      string   ("off" or "language")
+  model_bg:  string   (model for BG when routing=language)
+  model_en:  string   (model for EN when routing=language)
 ```
 
 ### ErrorResponse

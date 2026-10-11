@@ -176,6 +176,8 @@ names).
 | GET | `/api/v1/cases/{case_id}/index` | Index statistics |
 | POST | `/api/v1/cases/{case_id}/summarize` | Summary with citations |
 | POST | `/api/v1/cases/{case_id}/verify` | Claim verdict with supporting, denying and retrieved quotes |
+| POST | `/api/v1/cases/{case_id}/search` | Interactive search (semantic, keyword, hybrid); no LLM needed |
+| POST | `/api/v1/cases/{case_id}/ask` | Free-form question with cited answer |
 
 Case status follows `empty -> uploaded -> ingested -> stale -> ingested`;
 summarize and verify need `ingested` or `stale` (otherwise 409
@@ -202,6 +204,8 @@ Codes: `validation_error` 422, `case_not_found` 404, `document_not_found` 404,
 
 | Document | Content |
 |----------|---------|
+| [docs/USER_GUIDE.md](./docs/USER_GUIDE.md) | User guide (Bulgarian with English section): workflow, features, limitations |
+| [docs/INSTALL.md](./docs/INSTALL.md) | Installation guide: macOS, Linux, Python venv, Node, Ollama, Docker Compose, troubleshooting |
 | [docs/PRD.md](./docs/PRD.md) | Product requirements |
 | [docs/architecture-diagrams.md](./docs/architecture-diagrams.md) | Architecture and sequence diagrams |
 | [docs/api-endpoints.md](./docs/api-endpoints.md) | Complete endpoint reference |
