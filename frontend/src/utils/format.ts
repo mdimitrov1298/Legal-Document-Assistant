@@ -1,12 +1,15 @@
-const dateTimeFormat = new Intl.DateTimeFormat('bg-BG', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-})
-
 export function formatDateTime(iso: string | null): string {
   if (!iso) return '-'
   const date = new Date(iso)
-  return Number.isNaN(date.getTime()) ? iso : dateTimeFormat.format(date)
+  if (Number.isNaN(date.getTime())) return iso
+  
+  // Use the current browser language or fall back to 'bg-BG'
+  const locale = navigator.language || 'bg-BG'
+  const formatter = new Intl.DateTimeFormat(locale, {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  })
+  return formatter.format(date)
 }
 
 export function formatBytes(bytes: number): string {

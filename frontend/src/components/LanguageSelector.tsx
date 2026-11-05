@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AnswerLanguage } from '@/api/types'
 
 interface LanguageSelectorProps {
@@ -7,18 +8,14 @@ interface LanguageSelectorProps {
   disabled?: boolean
 }
 
-const OPTIONS: { value: AnswerLanguage; label: string }[] = [
-  { value: 'auto', label: 'Автоматично' },
-  { value: 'bg', label: 'Български' },
-  { value: 'en', label: 'English' },
-]
-
 export function LanguageSelector({ value, onChange, disabled }: LanguageSelectorProps) {
+  const { t } = useTranslation()
   const selectId = useId()
+  
   return (
     <div className="language-selector">
       <label htmlFor={selectId} className="language-selector__label">
-        Език на отговора
+        {t('answerLanguage.label')}
       </label>
       <select
         id={selectId}
@@ -27,11 +24,9 @@ export function LanguageSelector({ value, onChange, disabled }: LanguageSelector
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as AnswerLanguage)}
       >
-        {OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
+        <option value="auto">{t('answerLanguage.auto')}</option>
+        <option value="bg">{t('answerLanguage.bg')}</option>
+        <option value="en">{t('answerLanguage.en')}</option>
       </select>
     </div>
   )

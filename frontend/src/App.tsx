@@ -1,15 +1,18 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CaseCreate } from '@/api/types'
 import { CaseForm } from '@/components/CaseForm'
 import { CaseList } from '@/components/CaseList'
 import { CaseWorkspace } from '@/components/CaseWorkspace'
 import { Disclaimer } from '@/components/Disclaimer'
 import { ErrorBanner } from '@/components/ErrorBanner'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { StatusPanel } from '@/components/StatusPanel'
 import { useCases } from '@/hooks/useCases'
 import { useHealth } from '@/hooks/useHealth'
 
 export default function App() {
+  const { t } = useTranslation()
   const health = useHealth()
   const cases = useCases()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -29,10 +32,13 @@ export default function App() {
   return (
     <div className="app">
       <header className="app__header">
-        <h1>Асистент за правни документи</h1>
-        <p className="tagline">
-          Качване, индексиране, резюме с цитати и проверка на твърдение с локален модел.
-        </p>
+        <div className="app__title-bar">
+          <div>
+            <h1>{t('app.title')}</h1>
+            <p className="tagline">{t('app.tagline')}</p>
+          </div>
+          <LanguageSwitcher />
+        </div>
         <StatusPanel
           health={health.health}
           error={health.error}
@@ -42,21 +48,23 @@ export default function App() {
       </header>
 
       <div className="app__body">
-        <aside className="sidebar" aria-label="Казуси">
+        <aside className="sidebar" aria-label={t('case.list')}>
           <section className="panel" aria-labelledby="new-case-heading">
-            <h2 id="new-case-heading">Нов казус</h2>
+            <h2 id="new-case-heading">{t('case.new')}</h2>
             <CaseForm busy={cases.busy === 'create'} onCreate={handleCreate} />
           </section>
           <section className="panel" aria-labelledby="case-list-heading">
             <div className="panel__header">
-              <h2 id="case-list-heading">Казуси ({cases.cases.length})</h2>
+              <h2 id="case-list-heading">
+                {t('case.list')} ({cases.cases.length})
+              </h2>
               <button
                 type="button"
                 className="button--ghost"
                 onClick={cases.reload}
                 disabled={cases.busy !== null}
               >
-                Обнови
+                {t('status.refresh')}
               </button>
             </div>
             <ErrorBanner error={cases.error} onDismiss={cases.clearError} />
@@ -76,7 +84,7 @@ export default function App() {
           {selectedId ? (
             <CaseWorkspace key={selectedId} caseId={selectedId} onCaseChange={cases.upsert} />
           ) : (
-            <p className="placeholder">Изберете казус от списъка или създайте нов.</p>
+            <p className="placeholder">{t('app.placeholder')}</p>
           )}
         </main>
       </div>

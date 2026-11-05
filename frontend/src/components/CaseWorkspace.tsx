@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CaseResponse } from '@/api/types'
 import { AskPanel } from '@/components/AskPanel'
 import { CaseStatusBadge } from '@/components/CaseStatusBadge'
@@ -17,6 +18,7 @@ interface CaseWorkspaceProps {
 }
 
 export function CaseWorkspace({ caseId, onCaseChange }: CaseWorkspaceProps) {
+  const { t } = useTranslation()
   const detail = useCaseDetail(caseId, onCaseChange)
   const { caseData, documents, busy } = detail
   const [verifyClaim, setVerifyClaim] = useState('')
@@ -29,7 +31,7 @@ export function CaseWorkspace({ caseId, onCaseChange }: CaseWorkspaceProps) {
     return (
       <div className="workspace">
         <ErrorBanner error={detail.error} onDismiss={detail.clearError} />
-        {busy === 'load' && <p className="muted">Зареждане на казуса...</p>}
+        {busy === 'load' && <p className="muted">{t('case.loadingCase')}</p>}
       </div>
     )
   }
@@ -48,7 +50,9 @@ export function CaseWorkspace({ caseId, onCaseChange }: CaseWorkspaceProps) {
       <ErrorBanner error={detail.error} onDismiss={detail.clearError} />
 
       <section className="panel" aria-labelledby="documents-heading">
-        <h2 id="documents-heading">Документи ({documents.length})</h2>
+        <h2 id="documents-heading">
+          {t('documents.heading')} ({documents.length})
+        </h2>
         <DocumentUpload busy={busy === 'upload'} locked={locked} onUpload={detail.upload} />
         <DocumentList documents={documents} locked={locked} onDelete={detail.removeDocument} />
       </section>

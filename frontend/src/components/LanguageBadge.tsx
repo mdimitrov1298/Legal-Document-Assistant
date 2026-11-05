@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface LanguageBadgeProps {
   language: string | undefined
 }
@@ -18,8 +20,11 @@ function badgeClass(lang: string | undefined): string {
 }
 
 export function LanguageBadge({ language }: LanguageBadgeProps) {
+  const { t } = useTranslation()
+  const langLabel = language ?? t('documents.languageUnknown')
+  
   return (
-    <span className={badgeClass(language)} title={`Език на документа: ${language ?? 'неизвестен'}`}>
+    <span className={badgeClass(language)} title={t('documents.languageTitle', { language: langLabel })}>
       {badgeLabel(language)}
     </span>
   )

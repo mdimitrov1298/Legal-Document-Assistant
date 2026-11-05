@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { Citation } from '@/api/types'
 
 interface CitationListProps {
@@ -7,8 +8,11 @@ interface CitationListProps {
   emptyLabel?: string
 }
 
-export function CitationList({ items, label, emptyLabel = 'Няма цитати.' }: CitationListProps) {
-  if (!items.length) return <p className="muted">{emptyLabel}</p>
+export function CitationList({ items, label, emptyLabel }: CitationListProps) {
+  const { t } = useTranslation()
+  const defaultEmptyLabel = emptyLabel ?? t('citation.noCitations')
+  
+  if (!items.length) return <p className="muted">{defaultEmptyLabel}</p>
 
   const nonVerbatim = items.filter((c) => !c.verbatim).length
 
@@ -16,8 +20,7 @@ export function CitationList({ items, label, emptyLabel = 'Няма цитати
     <>
       {nonVerbatim > 0 && (
         <p className="notice notice--warn" role="note">
-          {nonVerbatim} от {items.length} цитата не са открити дословно в документите. Сверете ги с
-          оригиналния текст.
+          {t('citation.nonVerbatimWarning', { count: nonVerbatim, total: items.length })}
         </p>
       )}
       <ol className="citations" aria-label={label}>
@@ -30,27 +33,34 @@ export function CitationList({ items, label, emptyLabel = 'Няма цитати
 }
 
 function CitationItem({ citation: c }: { citation: Citation }) {
-  const source = `${c.document_filename}, фрагмент ${String(c.chunk_index)}`
+  const { t } = useTranslation()
+  const source = `${c.document_filename}, ${t('citation.chunk')} ${String(c.chunk_index)}`
+  
   return (
     <li className={`citation${c.verbatim ? '' : ' citation--non-verbatim'}`}>
       <div className="citation__meta">
         <span className="citation__file">{c.document_filename}</span>
-        <span>фрагмент #{c.chunk_index}</span>
+        <span>
+          {t('citation.chunk')} #{c.chunk_index}
+        </span>
         {c.relevance !== null && (
-          <span title="Сходство между заявката и фрагмента (по-високо е по-релевантно)">
-            релевантност {c.relevance.toFixed(2)}
+          <span title={t('citation.relevanceTitle')}>
+            {t('citation.relevance')} {c.relevance.toFixed(2)}
           </span>
         )}
         {!c.verbatim && (
-          <span
-            className="citation__flag"
-            title="Текстът не съвпада точно с фрагмента от документа и може да е перифразиран от модела."
-          >
-            Цитатът не е дословен
+          <span className="citation__flag" title={t('citation.nonVerbatimTitle')}>
+            {t('citation.nonVerbatimFlag')}
           </span>
         )}
       </div>
-      <blockquote aria-label={c.verbatim ? `Цитат от ${source}` : `Недословен цитат от ${source}`}>
+      <blockquote
+        aria-label={
+          c.verbatim
+            ? t('citation.verbatimLabel', { source })
+            : t('citation.nonVerbatimLabel', { source })
+        }
+      >
         {c.quote}
       </blockquote>
     </li>

@@ -1,15 +1,13 @@
+import { useTranslation } from 'react-i18next'
 import type { Verdict } from '@/api/types'
 
-const LABELS: Record<Verdict, string> = {
-  supported: 'Подкрепено',
-  denied: 'Опровергано',
-  inconclusive: 'Неустановено',
-}
-
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
+  const { t } = useTranslation()
+  const label = t(`verify.verdict.${verdict}`)
+
   return (
-    <span className={`verdict verdict--${verdict}`} aria-label={`Резултат: ${LABELS[verdict]}`}>
-      {LABELS[verdict]}
+    <span className={`verdict verdict--${verdict}`} aria-label={t('verify.verdictLabel', { verdict: label })}>
+      {label}
     </span>
   )
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { CaseResponse, IndexStatsResponse, IngestResponse } from '@/api/types'
 import { formatDateTime, formatDuration } from '@/utils/format'
 
@@ -19,54 +20,52 @@ export function IngestPanel({
   locked,
   onIngest,
 }: IngestPanelProps) {
+  const { t } = useTranslation()
   const hasDocuments = caseData.document_count > 0
   const reingest = caseData.status === 'ingested' || caseData.status === 'stale'
 
   return (
     <section className="panel" aria-labelledby="ingest-heading">
-      <h2 id="ingest-heading">Индексиране</h2>
-      <p className="muted">
-        Текстът се извлича, разделя на фрагменти и се записва във векторната база (Chroma).
-      </p>
+      <h2 id="ingest-heading">{t('ingest.heading')}</h2>
+      <p className="muted">{t('ingest.description')}</p>
 
       {caseData.status === 'stale' && (
         <p className="notice notice--warn" role="status">
-          Документите са променени след последното индексиране. Индексирайте отново, за да бъдат
-          включени в резюмето и проверката.
+          {t('ingest.staleWarning')}
         </p>
       )}
 
-      <button
-        type="button"
-        disabled={busy || locked || !hasDocuments}
-        onClick={() => void onIngest()}
-      >
-        {busy ? 'Индексиране...' : reingest ? 'Индексирай отново' : 'Индексирай'}
+      <button type="button" disabled={busy || locked || !hasDocuments} onClick={() => void onIngest()}>
+        {busy ? t('ingest.indexing') : reingest ? t('ingest.reindex') : t('ingest.index')}
       </button>
-      {!hasDocuments && <p className="muted">Първо качете поне един документ.</p>}
+      {!hasDocuments && <p className="muted">{t('ingest.needDocument')}</p>}
 
       {indexStats && (
-        <dl className="meta-grid" aria-label="Текущ индекс">
-          <dt>Фрагменти в индекса</dt>
+        <dl className="meta-grid" aria-label={t('ingest.statsTitle')}>
+          <dt>{t('ingest.chunksInIndex')}</dt>
           <dd>{indexStats.chunk_count}</dd>
-          <dt>Embeddings</dt>
+          <dt>{t('status.embeddings')}</dt>
           <dd>
             {indexStats.embedding_backend}, <code>{indexStats.embedding_model}</code>
           </dd>
-          <dt>Колекция</dt>
+          <dt>{t('ingest.collection')}</dt>
           <dd>
             <code>{indexStats.collection}</code>
           </dd>
-          <dt>Индексиран на</dt>
+          <dt>{t('ingest.indexedAt')}</dt>
           <dd>{formatDateTime(indexStats.ingested_at)}</dd>
         </dl>
       )}
 
       {result && (
         <p className="meta" role="status">
-          Последно индексиране: {result.documents_processed} документа, {result.chunks_indexed}{' '}
-          фрагмента (размер {result.chunk_size}, застъпване {result.chunk_overlap}) за{' '}
-          {formatDuration(result.duration_ms)}.
+          {t('ingest.lastResult', {
+            documents: t('ingest.document', { count: result.documents_processed }),
+            chunks: t('ingest.chunk', { count: result.chunks_indexed }),
+            chunkSize: result.chunk_size,
+            overlap: result.chunk_overlap,
+            duration: formatDuration(result.duration_ms),
+          })}
         </p>
       )}
     </section>
