@@ -10,6 +10,7 @@ export const en = {
     },
     status: {
       heading: 'Status',
+      systemLabel: 'System status',
       refresh: 'Refresh',
       apiChecking: 'Checking API...',
       apiUnavailable: 'API is unavailable: start the backend on port 8000.',
@@ -86,7 +87,7 @@ export const en = {
       chunksInIndex: 'Chunks in index',
       collection: 'Collection',
       indexedAt: 'Indexed at',
-      lastResult: 'Last indexing: {{documents}} documents, {{chunks}} chunks (size {{chunkSize}}, overlap {{overlap}}) in {{duration}}.',
+      lastResult: 'Last indexing: {{documents}}, {{chunks}} (size {{chunkSize}}, overlap {{overlap}}) in {{duration}}.',
       document_one: '{{count}} document',
       document_other: '{{count}} documents',
       chunk_one: '{{count}} chunk',
@@ -98,6 +99,7 @@ export const en = {
       summarize: 'Summarize',
       needIndex: 'Index the documents first.',
       citationsHeading: 'Citations',
+      citationsLabel: 'Citations from the summary',
     },
     search: {
       heading: 'Search Documents',
@@ -135,6 +137,7 @@ export const en = {
       retrieval: 'Retrieval',
       generation: 'Generation',
       citationsHeading: 'Citations',
+      citationsLabel: 'Citations from the answer',
       allRetrievedHeading: 'All retrieved chunks',
     },
     verify: {
@@ -153,7 +156,7 @@ export const en = {
       },
       verdictLabel: 'Result: {{verdict}}',
       supportingHeading: 'Supporting Citations',
-      denyingHeading: 'Denying Citations',
+      denyingHeading: 'Refuting citations',
       allRetrievedHeading: 'All retrieved chunks',
     },
     answerLanguage: {
@@ -163,7 +166,7 @@ export const en = {
       en: 'English',
     },
     generation: {
-      stubWarning: 'Stubbed response: Ollama is unavailable. The citations shown are raw excerpts from the documents, not model output.',
+      stubWarning: 'Placeholder response: Ollama is unavailable. The citations shown are raw excerpts from the documents, not model output.',
       modelTitle: 'Model used',
       stub: 'stub',
       time: 'Time',

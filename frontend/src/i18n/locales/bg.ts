@@ -10,6 +10,7 @@ export const bg = {
     },
     status: {
       heading: 'Състояние',
+      systemLabel: 'Състояние на системата',
       refresh: 'Обнови',
       apiChecking: 'Проверка на API...',
       apiUnavailable: 'API е недостъпен: стартирайте backend на порт 8000.',
@@ -50,7 +51,7 @@ export const bg = {
       newTitle: 'Ново заглавие на казуса',
       renameAction: 'Преименувай казуса {{title}}',
       deleteAction: 'Изтрий казуса {{title}}',
-      confirmDelete: 'Да се изтрие ли казусът „{{title}}" заедно с документите и индекса му?',
+      confirmDelete: 'Да се изтрие ли казусът „{{title}}“ заедно с документите и индекса му?',
       status: {
         empty: 'Без документи',
         uploaded: 'Неиндексиран',
@@ -70,7 +71,7 @@ export const bg = {
       uploading: 'Качване...',
       noDocuments: 'Няма качени документи.',
       deleteAction: 'Изтрий документа {{filename}}',
-      confirmDelete: 'Да се изтрие ли документът „{{filename}}"? Индексът ще трябва да се обнови.',
+      confirmDelete: 'Да се изтрие ли документът „{{filename}}“? Индексът ще трябва да се обнови.',
       languageTitle: 'Език на документа: {{language}}',
       languageUnknown: 'неизвестен',
     },
@@ -86,7 +87,7 @@ export const bg = {
       chunksInIndex: 'Фрагменти в индекса',
       collection: 'Колекция',
       indexedAt: 'Индексиран на',
-      lastResult: 'Последно индексиране: {{documents}} документа, {{chunks}} фрагмента (размер {{chunkSize}}, застъпване {{overlap}}) за {{duration}}.',
+      lastResult: 'Последно индексиране: {{documents}}, {{chunks}} (размер {{chunkSize}}, застъпване {{overlap}}) за {{duration}}.',
       document_one: '{{count}} документ',
       document_other: '{{count}} документа',
       chunk_one: '{{count}} фрагмент',
@@ -98,6 +99,7 @@ export const bg = {
       summarize: 'Обобщи',
       needIndex: 'Първо индексирайте документите.',
       citationsHeading: 'Цитати',
+      citationsLabel: 'Цитати от резюмето',
     },
     search: {
       heading: 'Търсене в документите',
@@ -135,6 +137,7 @@ export const bg = {
       retrieval: 'Извличане',
       generation: 'Генериране',
       citationsHeading: 'Цитати',
+      citationsLabel: 'Цитати от отговора',
       allRetrievedHeading: 'Всички извлечени фрагменти',
     },
     verify: {

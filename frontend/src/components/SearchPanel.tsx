@@ -72,7 +72,7 @@ export function SearchPanel({ result, ready, busy, locked, onSearch, onUseAsClai
         <div className="result">
           <p className="generation-info">
             <span>
-              {t('search.mode')}: {result.mode}
+              {t('search.mode')}: {t(`search.mode_${result.mode}`, { defaultValue: result.mode })}
             </span>
             <span>
               {t('search.results')}: {result.results.length}

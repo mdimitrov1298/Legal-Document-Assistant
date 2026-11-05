@@ -14,7 +14,7 @@ interface StatusPanelProps {
 export function StatusPanel({ health, error, loading, onRefresh }: StatusPanelProps) {
   const { t } = useTranslation()
   return (
-    <section className="status-panel" aria-label={t('status.heading')} aria-live="polite">
+    <section className="status-panel" aria-label={t('status.systemLabel')} aria-live="polite">
       <div className="status-panel__header">
         <h2>{t('status.heading')}</h2>
         <button type="button" className="button--ghost" onClick={onRefresh}>

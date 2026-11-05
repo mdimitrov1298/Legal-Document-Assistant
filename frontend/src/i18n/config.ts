@@ -6,7 +6,6 @@ import { en } from './locales/en'
 const STORAGE_KEY = 'legalAssistantLanguage'
 const DEFAULT_LANGUAGE = 'bg'
 
-// Get stored language or default
 function getInitialLanguage(): string {
   try {
     return localStorage.getItem(STORAGE_KEY) || DEFAULT_LANGUAGE
@@ -15,7 +14,6 @@ function getInitialLanguage(): string {
   }
 }
 
-// Store language preference
 export function saveLanguage(lang: string): void {
   try {
     localStorage.setItem(STORAGE_KEY, lang)
@@ -24,16 +22,31 @@ export function saveLanguage(lang: string): void {
   }
 }
 
-void i18n.use(initReactI18next).init({
-  resources: {
-    bg,
-    en,
-  },
-  lng: getInitialLanguage(),
-  fallbackLng: 'bg',
-  interpolation: {
-    escapeValue: false,
-  },
+function applyDocumentMeta(lang: string): void {
+  if (typeof document === 'undefined') return
+  document.documentElement.lang = lang
+  document.title = i18n.t('app.title')
+}
+
+void i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      bg,
+      en,
+    },
+    lng: getInitialLanguage(),
+    fallbackLng: 'bg',
+    interpolation: {
+      escapeValue: false,
+    },
+  })
+  .then(() => {
+    applyDocumentMeta(i18n.language)
+  })
+
+i18n.on('languageChanged', (lng) => {
+  applyDocumentMeta(lng)
 })
 
 export default i18n

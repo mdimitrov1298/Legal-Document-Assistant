@@ -45,7 +45,7 @@ export function SummaryPanel({ result, ready, busy, locked, onSummarize }: Summa
           <h3>
             {t('summary.citationsHeading')} ({result.citations.length})
           </h3>
-          <CitationList items={result.citations} label={t('summary.citationsHeading')} />
+          <CitationList items={result.citations} label={t('summary.citationsLabel')} />
         </div>
       )}
     </section>

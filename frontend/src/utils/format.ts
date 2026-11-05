@@ -1,11 +1,16 @@
+import i18n from '@/i18n/config'
+
+function resolveDateLocale(): string {
+  const lang = (i18n.language || 'bg').toLowerCase()
+  return lang.startsWith('en') ? 'en-GB' : 'bg-BG'
+}
+
 export function formatDateTime(iso: string | null): string {
   if (!iso) return '-'
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return iso
-  
-  // Use the current browser language or fall back to 'bg-BG'
-  const locale = navigator.language || 'bg-BG'
-  const formatter = new Intl.DateTimeFormat(locale, {
+
+  const formatter = new Intl.DateTimeFormat(resolveDateLocale(), {
     dateStyle: 'short',
     timeStyle: 'short',
   })

@@ -81,7 +81,7 @@ export function AskPanel({ result, ready, busy, locked, onAsk }: AskPanelProps) 
           <h3>
             {t('ask.citationsHeading')} ({result.citations.length})
           </h3>
-          <CitationList items={result.citations} label={t('ask.citationsHeading')} />
+          <CitationList items={result.citations} label={t('ask.citationsLabel')} />
           <details>
             <summary>
               {t('ask.allRetrievedHeading')} ({result.retrieved_quotes.length})
