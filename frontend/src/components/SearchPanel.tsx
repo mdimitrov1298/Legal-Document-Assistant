@@ -1,15 +1,10 @@
 import { useId, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { SearchMode, SearchResponse, SearchResult } from '@/api/types'
 import { formatDuration } from '@/utils/format'
 
 const QUERY_MIN = 1
 const QUERY_MAX = 1000
-
-const MODE_OPTIONS: { value: SearchMode; label: string }[] = [
-  { value: 'hybrid', label: 'Хибридно' },
-  { value: 'semantic', label: 'Семантично' },
-  { value: 'keyword', label: 'По ключови думи' },
-]
 
 interface SearchPanelProps {
   result: SearchResponse | null
@@ -21,6 +16,7 @@ interface SearchPanelProps {
 }
 
 export function SearchPanel({ result, ready, busy, locked, onSearch, onUseAsClaim }: SearchPanelProps) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<SearchMode>('hybrid')
   const queryId = useId()
@@ -35,10 +31,10 @@ export function SearchPanel({ result, ready, busy, locked, onSearch, onUseAsClai
 
   return (
     <section className="panel" aria-labelledby="search-heading" aria-busy={busy}>
-      <h2 id="search-heading">Търсене в документите</h2>
+      <h2 id="search-heading">{t('search.heading')}</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor={queryId} className="visually-hidden">
-          Заявка за търсене
+          {t('search.queryLabel')}
         </label>
         <input
           id={queryId}
@@ -46,13 +42,13 @@ export function SearchPanel({ result, ready, busy, locked, onSearch, onUseAsClai
           value={query}
           maxLength={QUERY_MAX}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Въведете заявка за търсене..."
+          placeholder={t('search.queryPlaceholder')}
           disabled={!ready}
         />
         <div className="panel__controls">
           <div className="search-mode-selector">
             <label htmlFor={modeId} className="search-mode-selector__label">
-              Режим:
+              {t('search.modeLabel')}
             </label>
             <select
               id={modeId}
@@ -61,30 +57,32 @@ export function SearchPanel({ result, ready, busy, locked, onSearch, onUseAsClai
               disabled={busy || locked}
               className="search-mode-selector__select"
             >
-              {MODE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+              <option value="hybrid">{t('search.mode_hybrid')}</option>
+              <option value="semantic">{t('search.mode_semantic')}</option>
+              <option value="keyword">{t('search.mode_keyword')}</option>
             </select>
           </div>
           <button type="submit" disabled={!ready || busy || locked || !valid}>
-            {busy ? 'Търсене...' : 'Търси'}
+            {busy ? t('search.searching') : t('search.search')}
           </button>
         </div>
       </form>
-      {!ready && <p className="muted">Първо индексирайте документите.</p>}
+      {!ready && <p className="muted">{t('search.needIndex')}</p>}
       {result && (
         <div className="result">
           <p className="generation-info">
-            <span>Режим: {result.mode}</span>
-            <span>Резултати: {result.results.length}</span>
-            <span>Време: {formatDuration(result.duration_ms)}</span>
+            <span>
+              {t('search.mode')}: {t(`search.mode_${result.mode}`, { defaultValue: result.mode })}
+            </span>
+            <span>
+              {t('search.results')}: {result.results.length}
+            </span>
+            <span>
+              {t('search.time')}: {formatDuration(result.duration_ms)}
+            </span>
           </p>
-          {result.results.length === 0 && (
-            <p className="muted">Няма намерени резултати.</p>
-          )}
-          <ol className="search-results" aria-label="Резултати от търсенето">
+          {result.results.length === 0 && <p className="muted">{t('search.noResults')}</p>}
+          <ol className="search-results" aria-label={t('search.resultsLabel')}>
             {result.results.map((r, i) => (
               <SearchResultItem
                 key={`${r.chunk_id}:${String(i)}`}
@@ -107,13 +105,16 @@ interface SearchResultItemProps {
 }
 
 function SearchResultItem({ item, onUseAsClaim }: SearchResultItemProps) {
+  const { t } = useTranslation()
   return (
     <li className="search-result">
       <div className="search-result__meta">
         <span className="search-result__file">{item.document_filename}</span>
-        <span>фрагмент #{item.chunk_index}</span>
-        <span className="search-result__score" title="Резултат от търсенето">
-          резултат {item.score.toFixed(3)}
+        <span>
+          {t('search.chunk')} #{item.chunk_index}
+        </span>
+        <span className="search-result__score" title={t('search.scoreTitle')}>
+          {t('search.score')} {item.score.toFixed(3)}
         </span>
       </div>
       <div className="search-result__text">
@@ -123,9 +124,9 @@ function SearchResultItem({ item, onUseAsClaim }: SearchResultItemProps) {
         type="button"
         className="search-result__use-btn"
         onClick={() => onUseAsClaim(item.text)}
-        title="Използвай текста като твърдение за проверка"
+        title={t('search.useAsClaimTitle')}
       >
-        Използвай като твърдение
+        {t('search.useAsClaim')}
       </button>
     </li>
   )

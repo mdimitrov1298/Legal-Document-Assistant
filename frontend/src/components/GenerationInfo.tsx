@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { formatDuration } from '@/utils/format'
 
 interface GenerationInfoProps {
@@ -9,21 +10,27 @@ interface GenerationInfoProps {
 }
 
 export function GenerationInfo({ model, stubbed, durationMs, chunksUsed }: GenerationInfoProps) {
+  const { t } = useTranslation()
   return (
     <>
       {stubbed && (
         <p className="notice notice--warn" role="status">
-          Отговорът е заглушка: Ollama не е достъпен. Показаните цитати са сурови откъси от
-          документите, а не резултат от модела.
+          {t('generation.stubWarning')}
         </p>
       )}
       <p className="generation-info">
-        <span className="model-tag" title="Използван модел">
+        <span className="model-tag" title={t('generation.modelTitle')}>
           {model}
         </span>
-        {stubbed && <span className="model-tag model-tag--stub">заглушка</span>}
-        <span>Време: {formatDuration(durationMs)}</span>
-        {chunksUsed !== undefined && <span>Използвани фрагменти: {chunksUsed}</span>}
+        {stubbed && <span className="model-tag model-tag--stub">{t('generation.stub')}</span>}
+        <span>
+          {t('generation.time')}: {formatDuration(durationMs)}
+        </span>
+        {chunksUsed !== undefined && (
+          <span>
+            {t('generation.chunksUsed')}: {chunksUsed}
+          </span>
+        )}
       </p>
     </>
   )

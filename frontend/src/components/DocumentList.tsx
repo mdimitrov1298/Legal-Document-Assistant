@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { DocumentResponse } from '@/api/types'
 import { LanguageBadge } from '@/components/LanguageBadge'
 import { formatBytes, formatDateTime } from '@/utils/format'
@@ -10,12 +11,11 @@ interface DocumentListProps {
 }
 
 export function DocumentList({ documents, locked, onDelete }: DocumentListProps) {
-  if (!documents.length) return <p className="muted">Няма качени документи.</p>
+  const { t } = useTranslation()
+  if (!documents.length) return <p className="muted">{t('documents.noDocuments')}</p>
 
   function handleDelete(doc: DocumentResponse) {
-    const confirmed = window.confirm(
-      `Да се изтрие ли документът „${doc.filename}“? Индексът ще трябва да се обнови.`,
-    )
+    const confirmed = window.confirm(t('documents.confirmDelete', { filename: doc.filename }))
     if (confirmed) void onDelete(doc.id)
   }
 
@@ -36,9 +36,9 @@ export function DocumentList({ documents, locked, onDelete }: DocumentListProps)
             className="button--danger"
             disabled={locked}
             onClick={() => handleDelete(doc)}
-            aria-label={`Изтрий документа ${doc.filename}`}
+            aria-label={t('documents.deleteAction', { filename: doc.filename })}
           >
-            Изтрий
+            {t('case.delete')}
           </button>
         </li>
       ))}

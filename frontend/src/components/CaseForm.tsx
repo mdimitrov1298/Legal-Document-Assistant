@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CaseCreate } from '@/api/types'
 
 const TITLE_MAX = 200
@@ -10,6 +11,7 @@ interface CaseFormProps {
 }
 
 export function CaseForm({ busy, onCreate }: CaseFormProps) {
+  const { t } = useTranslation()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const trimmed = title.trim()
@@ -30,18 +32,18 @@ export function CaseForm({ busy, onCreate }: CaseFormProps) {
   return (
     <form className="case-form" onSubmit={(e) => void handleSubmit(e)}>
       <label className="field">
-        <span>Заглавие на казуса</span>
+        <span>{t('case.titleLabel')}</span>
         <input
           type="text"
           value={title}
           maxLength={TITLE_MAX}
           required
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Напр. Договор за наем, ул. Витоша 1"
+          placeholder={t('case.titlePlaceholder')}
         />
       </label>
       <label className="field">
-        <span>Описание (по избор)</span>
+        <span>{t('case.descriptionLabel')}</span>
         <textarea
           rows={2}
           value={description}
@@ -50,7 +52,7 @@ export function CaseForm({ busy, onCreate }: CaseFormProps) {
         />
       </label>
       <button type="submit" disabled={busy || !trimmed}>
-        {busy ? 'Създаване...' : 'Създай казус'}
+        {busy ? t('case.creating') : t('case.create')}
       </button>
     </form>
   )

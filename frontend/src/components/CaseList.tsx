@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CaseResponse } from '@/api/types'
 import { CaseStatusBadge } from '@/components/CaseStatusBadge'
 import { formatDateTime } from '@/utils/format'
@@ -23,11 +24,12 @@ export function CaseList({
   onRename,
   onDelete,
 }: CaseListProps) {
-  if (loading && !cases.length) return <p className="muted">Зареждане на казусите...</p>
-  if (!cases.length) return <p className="muted">Все още няма казуси.</p>
+  const { t } = useTranslation()
+  if (loading && !cases.length) return <p className="muted">{t('case.loading')}</p>
+  if (!cases.length) return <p className="muted">{t('case.noCases')}</p>
 
   return (
-    <ul className="case-list" aria-label="Казуси">
+    <ul className="case-list" aria-label={t('case.list')}>
       {cases.map((c) => (
         <CaseListItem
           key={c.id}
@@ -60,6 +62,7 @@ function CaseListItem({
   onRename,
   onDelete,
 }: CaseListItemProps) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(caseData.title)
   const trimmed = title.trim()
@@ -79,9 +82,7 @@ function CaseListItem({
   }
 
   function handleDelete() {
-    const confirmed = window.confirm(
-      `Да се изтрие ли казусът „${caseData.title}“ заедно с документите и индекса му?`,
-    )
+    const confirmed = window.confirm(t('case.confirmDelete', { title: caseData.title }))
     if (confirmed) void onDelete(caseData.id)
   }
 
@@ -94,14 +95,14 @@ function CaseListItem({
             value={title}
             maxLength={200}
             onChange={(e) => setTitle(e.target.value)}
-            aria-label="Ново заглавие на казуса"
+            aria-label={t('case.newTitle')}
             autoFocus
           />
           <button type="submit" disabled={locked || !trimmed}>
-            Запази
+            {t('case.save')}
           </button>
           <button type="button" className="button--ghost" onClick={() => setEditing(false)}>
-            Отказ
+            {t('case.cancel')}
           </button>
         </form>
       ) : (
@@ -116,7 +117,7 @@ function CaseListItem({
             <span className="case-list__meta">
               <CaseStatusBadge status={caseData.status} />
               <span className="muted">
-                {caseData.document_count} док., {formatDateTime(caseData.created_at)}
+                {caseData.document_count} {t('case.documents')}, {formatDateTime(caseData.created_at)}
               </span>
             </span>
           </button>
@@ -126,18 +127,18 @@ function CaseListItem({
               className="button--ghost"
               disabled={locked}
               onClick={startEditing}
-              aria-label={`Преименувай казуса ${caseData.title}`}
+              aria-label={t('case.renameAction', { title: caseData.title })}
             >
-              Преименувай
+              {t('case.rename')}
             </button>
             <button
               type="button"
               className="button--danger"
               disabled={locked}
               onClick={handleDelete}
-              aria-label={`Изтрий казуса ${caseData.title}`}
+              aria-label={t('case.deleteAction', { title: caseData.title })}
             >
-              Изтрий
+              {t('case.delete')}
             </button>
           </div>
         </>

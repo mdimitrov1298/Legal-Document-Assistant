@@ -1,4 +1,5 @@
 import { useId, type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AnswerLanguage, VerifyResponse } from '@/api/types'
 import { CitationList } from '@/components/CitationList'
 import { GenerationInfo } from '@/components/GenerationInfo'
@@ -22,7 +23,16 @@ interface VerifyPanelProps {
   onClaimChange: (claim: string) => void
 }
 
-export function VerifyPanel({ result, ready, busy, locked, onVerify, claim, onClaimChange }: VerifyPanelProps) {
+export function VerifyPanel({
+  result,
+  ready,
+  busy,
+  locked,
+  onVerify,
+  claim,
+  onClaimChange,
+}: VerifyPanelProps) {
+  const { t } = useTranslation()
   const [answerLang, setAnswerLang] = useState<AnswerLanguage>('auto')
   const claimId = useId()
   const trimmed = claim.trim()
@@ -35,10 +45,10 @@ export function VerifyPanel({ result, ready, busy, locked, onVerify, claim, onCl
 
   return (
     <section className="panel" aria-labelledby="verify-heading" aria-busy={busy}>
-      <h2 id="verify-heading">Проверка на твърдение</h2>
+      <h2 id="verify-heading">{t('verify.heading')}</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor={claimId} className="visually-hidden">
-          Твърдение за проверка
+          {t('verify.claimLabel')}
         </label>
         <textarea
           id={claimId}
@@ -46,17 +56,17 @@ export function VerifyPanel({ result, ready, busy, locked, onVerify, claim, onCl
           value={claim}
           maxLength={CLAIM_MAX}
           onChange={(e) => onClaimChange(e.target.value)}
-          placeholder="Въведете фактическо твърдение за проверка по документите..."
+          placeholder={t('verify.claimPlaceholder')}
           disabled={!ready}
         />
         <div className="panel__controls">
           <LanguageSelector value={answerLang} onChange={setAnswerLang} disabled={busy || locked} />
           <button type="submit" disabled={!ready || busy || locked || !valid}>
-            {busy ? 'Проверка...' : 'Провери'}
+            {busy ? t('verify.verifying') : t('verify.verify')}
           </button>
         </div>
       </form>
-      {!ready && <p className="muted">Първо индексирайте документите.</p>}
+      {!ready && <p className="muted">{t('verify.needIndex')}</p>}
       {result && (
         <div className="result">
           <GenerationInfo
@@ -64,18 +74,26 @@ export function VerifyPanel({ result, ready, busy, locked, onVerify, claim, onCl
             stubbed={result.stubbed}
             durationMs={result.duration_ms}
           />
-          <p className="muted">Твърдение: {result.claim}</p>
+          <p className="muted">
+            {t('verify.claim')}: {result.claim}
+          </p>
           <p>
-            Резултат: <VerdictBadge verdict={result.verdict} />
+            {t('verify.result')}: <VerdictBadge verdict={result.verdict} />
           </p>
           <p>{result.rationale}</p>
-          <h3>Подкрепящи цитати ({result.supporting_quotes.length})</h3>
-          <CitationList items={result.supporting_quotes} label="Подкрепящи цитати" />
-          <h3>Опровергаващи цитати ({result.denying_quotes.length})</h3>
-          <CitationList items={result.denying_quotes} label="Опровергаващи цитати" />
+          <h3>
+            {t('verify.supportingHeading')} ({result.supporting_quotes.length})
+          </h3>
+          <CitationList items={result.supporting_quotes} label={t('verify.supportingHeading')} />
+          <h3>
+            {t('verify.denyingHeading')} ({result.denying_quotes.length})
+          </h3>
+          <CitationList items={result.denying_quotes} label={t('verify.denyingHeading')} />
           <details>
-            <summary>Всички извлечени фрагменти ({result.retrieved_quotes.length})</summary>
-            <CitationList items={result.retrieved_quotes} label="Всички извлечени фрагменти" />
+            <summary>
+              {t('verify.allRetrievedHeading')} ({result.retrieved_quotes.length})
+            </summary>
+            <CitationList items={result.retrieved_quotes} label={t('verify.allRetrievedHeading')} />
           </details>
         </div>
       )}

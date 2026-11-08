@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const ACCEPT = '.pdf,.txt,text/plain,application/pdf'
 
@@ -10,10 +11,11 @@ interface DocumentUploadProps {
 }
 
 export function DocumentUpload({ busy, locked, onUpload }: DocumentUploadProps) {
+  const { t } = useTranslation()
   const inputId = useId()
   return (
     <div className="document-upload">
-      <label htmlFor={inputId}>Добавете PDF или TXT файлове (на български)</label>
+      <label htmlFor={inputId}>{t('documents.upload')}</label>
       <input
         id={inputId}
         type="file"
@@ -26,7 +28,7 @@ export function DocumentUpload({ busy, locked, onUpload }: DocumentUploadProps) 
           if (files.length) void onUpload(files)
         }}
       />
-      {busy && <p className="muted">Качване...</p>}
+      {busy && <p className="muted">{t('documents.uploading')}</p>}
     </div>
   )
 }

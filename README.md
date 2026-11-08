@@ -19,7 +19,7 @@ case content. The target machine has about 16 GB of RAM.
 | Layer | Choice |
 |-------|--------|
 | API | FastAPI (Python 3.12), versioned under `/api/v1`, uniform error envelope |
-| UI | React 19 + Vite + TypeScript, plain CSS, Bulgarian UI copy |
+| UI | React 19 + Vite + TypeScript, react-i18next, plain CSS, bilingual UI (Bulgarian/English) |
 | LLM runtime | Ollama only: default `s_emanuilov/BgGPT-v1.0:9b` (BgGPT v1.0 9B, about 7.7 GB); fallback `qwen2.5:7b` for low-memory machines (about 4.9 GB); evaluation control `llama3.1:8b` |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` on CPU (default); optional Ollama `nomic-embed-text`; `hash_stub` for CI/offline |
 | Vector store | Chroma `PersistentClient`, one collection per case |

@@ -1,12 +1,20 @@
-const dateTimeFormat = new Intl.DateTimeFormat('bg-BG', {
-  dateStyle: 'short',
-  timeStyle: 'short',
-})
+import i18n from '@/i18n/config'
+
+function resolveDateLocale(): string {
+  const lang = (i18n.language || 'bg').toLowerCase()
+  return lang.startsWith('en') ? 'en-GB' : 'bg-BG'
+}
 
 export function formatDateTime(iso: string | null): string {
   if (!iso) return '-'
   const date = new Date(iso)
-  return Number.isNaN(date.getTime()) ? iso : dateTimeFormat.format(date)
+  if (Number.isNaN(date.getTime())) return iso
+
+  const formatter = new Intl.DateTimeFormat(resolveDateLocale(), {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  })
+  return formatter.format(date)
 }
 
 export function formatBytes(bytes: number): string {

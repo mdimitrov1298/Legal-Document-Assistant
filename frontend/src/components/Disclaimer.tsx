@@ -1,13 +1,11 @@
+import { useTranslation } from 'react-i18next'
+
 export function Disclaimer() {
+  const { t } = useTranslation()
   return (
     <footer className="disclaimer">
-      <p>
-        Инструментът не дава правни съвети и не прави правно тълкуване, класификация или изводи.
-        Резюметата и проверките са помощни и винаги трябва да се сверяват с оригиналните документи.
-      </p>
-      <p>
-        Документите по казуса са само на български. Данните остават локални: без облачни LLM API.
-      </p>
+      <p>{t('disclaimer.line1')}</p>
+      <p>{t('disclaimer.line2')}</p>
     </footer>
   )
 }
